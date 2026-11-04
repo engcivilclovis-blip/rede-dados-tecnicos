@@ -343,15 +343,15 @@ function apiPostTimeout(action,extra,ms){
 function apiListar(colecao){ return apiPost('listar',{colecao:colecao}).then(function(r){return (r&&r.dados)||[];}); }
 function apiSalvarDoc(colecao,doc){ return apiPost('salvar',{colecao:colecao,doc:doc}); }
 // upload de arquivo para o Drive (via backend) — devolve {nome,link}
-function uploadArquivoDrive(file, cb){
+function uploadArquivoDrive(file, cb, opts){
   if(!file) return;
   if(file.size > 12*1024*1024){ alert('Arquivo muito grande ('+Math.round(file.size/1024/1024)+' MB). Máx. ~12 MB. Use um link do Drive.'); return; }
   var aviso=document.getElementById('upStatus'); if(aviso)aviso.textContent='Enviando "'+file.name+'"...';
   var rd=new FileReader();
   rd.onload=function(){
-    apiPost('uploadArquivo',{nome:file.name, base64:String(rd.result), mime:file.type||'application/octet-stream'}).then(function(r){
+    apiPost('uploadArquivo',{nome:file.name, base64:String(rd.result), mime:file.type||'application/octet-stream', privado:!!(opts&&opts.privado)}).then(function(r){
       if(aviso)aviso.textContent='';
-      if(r&&(r.ok||r.url)){ cb({nome:file.name, link:r.url}); }
+      if(r&&(r.ok||r.url)){ cb({nome:file.name, link:r.url, id:r.id||''}); }
       else { alert('Falha no upload: '+((r&&r.erro)||'erro desconhecido')); }
     }).catch(function(){ if(aviso)aviso.textContent=''; alert('Falha no upload.'); });
   };
@@ -1424,7 +1424,7 @@ function parcVerHtml(){
   // entregas (trabalhos prontos) — escritório anexa
   h+='<div class="card"><h2>✅ Trabalhos prontos p/ baixar ('+(t.entregas||[]).length+')</h2>'+
     ((t.entregas||[]).length?t.entregas.map(function(e,i){ var lib=entregaLiberada(e);
-      if(!esc_ && !lib) return '<div class="docfile">🔒 '+esc(e.nome)+' <span class="pill warn" style="font-size:10px">pronto · aguardando liberação</span> <span class="muted small">'+brData(e.quando)+'</span></div>';
+      if(!esc_ && !lib) return '<div class="docfile">🔒 '+esc(e.nome)+' <span class="pill warn" style="font-size:10px">'+(e.motivo==='mensalidade em aberto'?'mensalidade em aberto':'pronto · aguardando liberação')+'</span> <span class="muted small">'+brData(e.quando)+'</span></div>';
       return '<div class="docfile">📄 '+esc(e.nome)+(e.link?' · <a href="'+esc(e.link)+'" target="_blank"><b>baixar</b></a>':'')+' <span class="muted small">'+brData(e.quando)+'</span>'+
         (esc_?(lib?' <span class="pill ok" style="font-size:10px">liberado'+(e.liberadoEm?' '+brData(e.liberadoEm):'')+'</span>':' <span class="pill warn" style="font-size:10px">aguardando liberação</span> <button class="btn sm" onclick="liberarEntrega(\''+t.id+'\','+i+')">🔓 Liberar</button>')+
           ' <button class="btn sm sec" onclick="removeEntregaParc(\''+t.id+'\','+i+')">✕</button>':'')+'</div>';}).join(""):'<div class="muted small">'+(esc_?'Anexe aqui o trabalho concluído para o parceiro baixar.':'Ainda não há entregas. Você será avisado quando ficar pronto.')+'</div>')+
@@ -1445,19 +1445,32 @@ function mudarStatusParc(id,st){ var t=trabById(id); if(!t)return; if(t.status==
 function addMovParc(id){ var t=trabById(id); if(!t)return; var el=document.getElementById("movParcTxt"); var txt=el?el.value.trim():""; if(!txt){alert("Escreva o andamento.");return;}
   registrarMov(t,txt); salvarTrab(); render();
   setTimeout(function(){ if(confirm("Avisar o "+(ehEscritorio()?"parceiro":"escritório")+" pelo WhatsApp?")){ ehEscritorio()?avisarParceiro(id):avisarDono(id); } },150); }
-function addEntregaParc(id){ var t=trabById(id); if(!t)return; var nome=prompt("Nome do trabalho pronto (ex.: Memorial descritivo.pdf):"); if(!nome)return;
-  var link=prompt("Cole o LINK para download (Google Drive):","")||"";
+function addEntregaParc(id){ var t=trabById(id); if(!t)return;
+  if(confirm("Enviar o arquivo pronto do computador?\n\nOK = escolher o arquivo (fica PRIVADO no seu Drive até você liberar)\nCancelar = colar um link do Google Drive")){
+    var inp=document.createElement("input"); inp.type="file"; inp.style.display="none"; document.body.appendChild(inp);
+    inp.onchange=function(){ var f=inp.files&&inp.files[0]; document.body.removeChild(inp); if(!f)return;
+      uploadArquivoDrive(f,function(r){ var t2=trabById(id); if(!t2)return; if(!t2.entregas)t2.entregas=[];
+        t2.entregas.push({nome:r.nome,link:r.link,fileId:r.id||"",quando:new Date().toISOString(),quem:user.nome,liberado:false});
+        registrarMov(t2,"Trabalho pronto: "+r.nome+" (aguardando liberação)"); salvarTrab(); render();
+        setTimeout(function(){ if(confirm("Avisar o parceiro que o trabalho está pronto? (ele só baixa depois que você clicar em Liberar)")) avisarParceiro(id); },150); },{privado:true}); };
+    inp.click(); return; }
+  var nome=prompt("Nome do trabalho pronto (ex.: Memorial descritivo.pdf):"); if(!nome)return;
+  var link=prompt("Cole o LINK para download (Google Drive). Deixe o arquivo RESTRITO: ao liberar, o sistema compartilha sozinho.","")||"";
   if(!t.entregas)t.entregas=[]; t.entregas.push({nome:nome,link:link,quando:new Date().toISOString(),quem:user.nome,liberado:false});
   registrarMov(t,"Trabalho pronto: "+nome+" (aguardando liberação)"); salvarTrab(); render();
   setTimeout(function(){ if(confirm("Avisar o parceiro que o trabalho está pronto? (ele só baixa depois que você clicar em Liberar)")) avisarParceiro(id); },150); }
 // entrega antiga (sem o campo) continua liberada; as novas nascem bloqueadas até o escritório liberar
 function entregaLiberada(e){ return !e || e.liberado!==false; }
 function liberarEntrega(id,i){ var t=trabById(id); if(!t||!t.entregas||!t.entregas[i])return; var e=t.entregas[i];
-  if(!confirm("Liberar o download de \""+e.nome+"\" para "+(t.parceiro||"o parceiro")+"?\n\nSe o arquivo está no seu Drive como restrito, compartilhe-o com o e-mail do parceiro (o link abre em seguida)."))return;
-  e.liberado=true; e.liberadoEm=new Date().toISOString(); e.liberadoPor=user.nome;
-  registrarMov(t,"Download liberado: "+e.nome); salvarTrab(); render();
-  if(e.link) try{ window.open(e.link,"_blank"); }catch(_){}
-  setTimeout(function(){ if(confirm("Avisar o parceiro que já pode baixar?")) avisarParceiro(id); },300); }
+  var dir=(usuarios||[]).concat(diretorio||[]).find(function(u){ return eqNome(u.nome,t.parceiro); })||{};
+  var venc=dir.pagoAte&&String(dir.pagoAte).slice(0,10)<new Date().toISOString().slice(0,10);
+  if(!confirm("Liberar o download de \""+e.nome+"\" para "+(t.parceiro||"o parceiro")+"?"+(venc?"\n\n⚠️ A mensalidade deste parceiro está vencida ("+brData(dir.pagoAte)+"): ele só verá o arquivo depois que você atualizar o \"pago até\" dele.":"")+"\n\nO sistema compartilha o arquivo do Drive para ele baixar."))return;
+  apiPost('liberarEntrega',{id:id, indice:i, nome:e.nome}).then(function(r){
+    if(!r||r.erro){ alert("Não consegui liberar: "+((r&&r.erro)||"erro de conexão")); return; }
+    var k=trabalhos.findIndex(function(x){return x.id===id;}); if(k>-1&&r.doc) trabalhos[k]=r.doc; render();
+    if(r.compartilhamento&&r.compartilhamento!=="ok"){ alert("Liberado, mas atenção:\n"+r.compartilhamento); if(e.link) try{ window.open(e.link,"_blank"); }catch(_){} }
+    setTimeout(function(){ if(confirm("Liberado. Avisar o parceiro que já pode baixar?")) avisarParceiro(id); },300);
+  }).catch(function(){ alert("Falha de conexão ao liberar."); }); }
 // upload direto de arquivo do parceiro (zip do levantamento, PDF…) para o Drive, pelo servidor
 function enviarArqParc(id){ var t=trabById(id); if(!t)return;
   var inp=document.createElement("input"); inp.type="file"; inp.style.display="none"; document.body.appendChild(inp);
@@ -1504,7 +1517,7 @@ window.addEventListener("message",function(ev){
   if(d.tipo==="agroteca-pronto"){ var t0=trabById(d.servico); if(t0) responder({tipo:"agroteca-init", imovel:t0.imovel||{}, cliente:t0.cliente||{}, parceiro:t0.parceiro||""}); return; }
   if(d.tipo!=="agroteca-ficha") return;
   var t=trabById(d.servico); if(!t){ responder({tipo:"agroteca-ficha-erro", erro:"serviço não encontrado"}); return; }
-  apiPost('uploadArquivo',{nome:d.nome, base64:'data:application/json;base64,'+b64Utf8(d.conteudo), mime:'application/json'}).then(function(r){
+  apiPost('uploadArquivo',{nome:d.nome, base64:'data:application/json;base64,'+b64Utf8(d.conteudo), mime:'application/json', privado:true}).then(function(r){
     if(!r || !(r.ok||r.url)){ responder({tipo:"agroteca-ficha-erro", erro:(r&&r.erro)||"falha no envio"}); return; }
     var agora=new Date().toISOString(), t2=trabById(d.servico)||t;
     t2.ficha={nome:d.nome, link:r.url, quando:agora, quem:user.nome, resumo:d.resumo||{}};
@@ -1520,7 +1533,7 @@ function msgAndamento(t){
   var last=(t.movimentos&&t.movimentos.length)?t.movimentos[t.movimentos.length-1].texto:t.status;
   var m="*"+(cfg.brand||"Sistema")+"* — Andamento do serviço\n📋 "+(t.titulo||"(serviço)")+"\n📌 Status: "+t.status+"\n";
   if(last)m+="📝 "+last+"\n";
-  if(t.entregas&&t.entregas.length){ var e=t.entregas[t.entregas.length-1]; m+="✅ Pronto p/ baixar: "+e.nome+(e.link?(" — "+e.link):"")+"\n"; }
+  if(t.entregas&&t.entregas.length){ var e=t.entregas[t.entregas.length-1]; m+=(entregaLiberada(e)?"✅ Pronto p/ baixar: "+e.nome+(e.link?(" — "+e.link):""):"✅ Pronto: "+e.nome+" (aguardando liberação)")+"\n"; }
   return m;
 }
 function abrirWa(f,msg){ f=foneWhats(f); if(!f){alert("Sem telefone cadastrado.");return;} window.open("https://wa.me/"+f+"?text="+encodeURIComponent(msg),"_blank"); }
@@ -1530,7 +1543,7 @@ function avisarCliente(id){ var t=trabById(id); if(!t)return; abrirWa(t.cliente&
 function parcExtrato(id){
   var t=trabById(id); if(!t)return;
   var linhas=(t.movimentos||[]).map(function(m){return '<tr><td>'+esc(brDH(m.quando))+'</td><td>'+esc(m.quem)+'</td><td>'+esc(m.texto)+'</td></tr>';}).join("")||'<tr><td colspan="3">Sem movimentações.</td></tr>';
-  var ent=(t.entregas||[]).map(function(e){return '<li>'+esc(e.nome)+(e.link?(' — '+esc(e.link)):'')+' ('+esc(brData(e.quando))+')</li>';}).join("")||'<li>—</li>';
+  var ent=(t.entregas||[]).map(function(e){return '<li>'+esc(e.nome)+(e.link&&entregaLiberada(e)?(' — '+esc(e.link)):(entregaLiberada(e)?'':' — aguardando liberação'))+' ('+esc(brData(e.quando))+')</li>';}).join("")||'<li>—</li>';
   var w=window.open("","_blank"); if(!w){alert("Permita pop-ups para gerar o extrato.");return;}
   w.document.write('<html><head><meta charset="utf-8"><title>Extrato — '+esc(t.titulo)+'</title><style>body{font-family:Arial,sans-serif;color:#1a1a1a;padding:24px;max-width:800px;margin:auto}h1{color:#1B4332;font-size:20px}h2{font-size:15px;color:#0f2a63;border-bottom:1px solid #ccc;padding-bottom:4px;margin-top:22px}table{width:100%;border-collapse:collapse;font-size:13px}td,th{border:1px solid #ddd;padding:6px 8px;text-align:left;vertical-align:top}th{background:#f0f4f0}.kv{font-size:13px;margin:3px 0}.kv b{display:inline-block;min-width:150px;color:#555}.foot{margin-top:26px;font-size:11px;color:#888}</style></head><body>'+
     '<h1>'+esc(cfg.brand||"Sistema")+' — Extrato de andamento</h1>'+
@@ -5716,6 +5729,10 @@ function editarUsuario(id){
   var pin=prompt("PIN (senha) do usuário:", u.pin); if(pin===null)return;
   pin=(pin||"").trim(); if(!pin){ alert("O PIN não pode ficar vazio."); return; }
   var em=prompt("E-mail do usuário (para verificação/2FA):", u.email||""); if(em===null)return;
+  if(["master","gestor","atendente"].indexOf(u.papel)<0){
+    var pa=prompt("Mensalidade paga até (dd/mm/aaaa). Vencida = o parceiro não baixa nenhuma entrega. Vazio = sem controle:", u.pagoAte?u.pagoAte.split("-").reverse().join("/"):""); if(pa===null)return;
+    pa=(pa||"").trim(); if(pa){ var mm=pa.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); if(!mm){ alert("Data inválida. Use dd/mm/aaaa."); return; }
+      u.pagoAte=mm[3]+"-"+("0"+mm[2]).slice(-2)+"-"+("0"+mm[1]).slice(-2); } else { delete u.pagoAte; } }
   u.nome=(nome.trim()||u.nome); u.pin=pin; u.email=(em||"").trim(); apiSalvarDoc('usuarios',u); renderMain(); alert("Usuário atualizado.");
 }
 /* --- editor de módulos por usuário --- */
