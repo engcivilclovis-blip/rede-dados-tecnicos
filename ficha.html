@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ficha de Trabalho Técnico</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: índice fixo das etapas à esquerda + formulário em blocos numerados (a ordem é a do requerimento) */
+:root{
+  --bg:#F3F4F2; --papel:#FFFFFF; --tinta:#1D2522; --suave:#5B6662; --linha:#D3D8D5; --linha-forte:#AEB7B2;
+  --acento:#1F5C4A; --acento-claro:#E1ECE7; --ok:#2E7D4F; --ok-claro:#E3F1E8; --pend:#9A5B00; --pend-claro:#FBEFD9; --erro:#A33A2B;
+  --f-titulo:"Archivo","Segoe UI",Arial,sans-serif; --f-texto:"Source Sans 3","Segoe UI",Arial,sans-serif; --f-mono:"JetBrains Mono",Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#141917; --papel:#1C2320; --tinta:#E6ECE9; --suave:#9AA7A1; --linha:#2F3934; --linha-forte:#45524C;
+  --acento:#7CC4A9; --acento-claro:#20342C; --ok:#7FCF9C; --ok-claro:#1E3326; --pend:#E9B45C; --pend-claro:#3A2E19; --erro:#F08F7F; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#141917; --papel:#1C2320; --tinta:#E6ECE9; --suave:#9AA7A1; --linha:#2F3934; --linha-forte:#45524C;
+  --acento:#7CC4A9; --acento-claro:#20342C; --ok:#7FCF9C; --ok-claro:#1E3326; --pend:#E9B45C; --pend-claro:#3A2E19; --erro:#F08F7F; color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tinta);font:16px/1.5 var(--f-texto);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+h1,h2,h3{font-family:var(--f-titulo);text-wrap:balance;margin:0}
+.topo{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;max-width:1180px;margin:0 auto;padding-block:22px 18px;border-bottom:1px solid var(--linha)}
+.topo h1{font-size:1.45rem;font-weight:700;letter-spacing:-.01em}
+.topo .sub{color:var(--suave);font-size:.95rem;flex:1 1 320px}
+.topo .acoes{display:flex;gap:8px;flex-wrap:wrap}
+.grade{display:grid;grid-template-columns:220px minmax(0,1fr);gap:28px;max-width:1180px;margin:22px auto 0}
+@media (max-width:860px){.grade{grid-template-columns:1fr}.indice{position:static!important}}
+.indice{position:sticky;top:max(16px,env(safe-area-inset-top,0px));align-self:start;display:flex;flex-direction:column;gap:2px}
+.indice a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;color:var(--tinta);text-decoration:none;font-size:.93rem}
+.indice a:hover{background:var(--acento-claro)}
+.indice .n{font-family:var(--f-mono);font-size:.78rem;color:var(--suave);width:1.6em}
+.indice .st{margin-left:auto;width:9px;height:9px;border-radius:50%;background:var(--linha-forte)}
+.indice .st.ok{background:var(--ok)} .indice .st.pend{background:var(--pend)}
+@media (max-width:860px){.indice{flex-direction:row;flex-wrap:wrap}.indice a{border:1px solid var(--linha)}}
+main{display:flex;flex-direction:column;gap:22px;min-width:0}
+section.bloco{background:var(--papel);border:1px solid var(--linha);border-radius:8px;padding:22px clamp(16px,3vw,28px)}
+.cab{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.cab .n{font-family:var(--f-mono);color:var(--acento);font-size:.9rem}
+.cab h2{font-size:1.15rem;font-weight:600}
+.dica{color:var(--suave);font-size:.92rem;margin:0 0 16px;max-width:72ch}
+.campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px 16px}
+.campos .largo{grid-column:1/-1}
+label.c{display:flex;flex-direction:column;gap:4px;font-size:.82rem;font-weight:600;color:var(--suave);letter-spacing:.01em;min-width:0}
+label.c.obr>span::after{content:" *";color:var(--erro)}
+input,select,textarea{font:inherit;font-size:.97rem;color:var(--tinta);background:var(--bg);border:1px solid var(--linha-forte);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:96px;line-height:1.45}
+textarea.memo{font-family:var(--f-mono);font-size:.84rem;min-height:260px}
+input.mono{font-family:var(--f-mono);font-size:.9rem}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--acento);outline-offset:1px}
+.vazio{border-color:var(--pend)!important;background:var(--pend-claro)}
+button{font:600 .92rem var(--f-texto);border-radius:6px;padding:9px 14px;cursor:pointer;border:1px solid var(--linha-forte);background:var(--papel);color:var(--tinta)}
+button:hover{border-color:var(--acento)}
+button.prim{background:var(--acento);border-color:var(--acento);color:var(--papel)}
+button.peq{padding:5px 10px;font-size:.84rem}
+button.rem{color:var(--erro)}
+.sub3{font-family:var(--f-titulo);font-size:.82rem;text-transform:uppercase;letter-spacing:.07em;color:var(--acento);margin:18px 0 8px;font-weight:600}
+.cartao{border:1px solid var(--linha);border-radius:8px;padding:16px;margin-top:14px;background:var(--bg)}
+.cartao .cc{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.cartao .cc h3{font-size:1rem;font-weight:600}
+.chip{font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--acento-claro);color:var(--acento)}
+.linha-botoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.logo-prev{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo-prev img{max-height:64px;max-width:160px;border:1px solid var(--linha);border-radius:6px;background:#fff;padding:4px}
+.cabecalho-prev{border:1px solid var(--linha);border-radius:6px;padding:12px 14px;display:flex;gap:14px;align-items:center;background:#fff;color:#1d2522;max-width:620px}
+.cabecalho-prev img{height:42px}
+.cabecalho-prev b{font-family:var(--f-titulo);font-size:.95rem} .cabecalho-prev small{display:block;color:#5b6662;font-size:.74rem;line-height:1.35}
+.arquivo{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:.92rem}
+.fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-top:12px}
+.foto{border:1px solid var(--linha);border-radius:6px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
+.foto img{width:100%;height:120px;object-fit:cover;display:block}
+.foto .p{padding:8px;display:flex;flex-direction:column;gap:6px}
+.pend-lista{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.pend-lista li{padding:8px 12px;border-radius:6px;background:var(--pend-claro);color:var(--tinta);font-size:.92rem;border-left:3px solid var(--pend)}
+.pend-lista li.okk{background:var(--ok-claro);border-left-color:var(--ok)}
+.aviso{font-size:.9rem;padding:10px 12px;border-radius:6px;background:var(--acento-claro);color:var(--tinta);margin-top:10px}
+.msg{min-height:1.4em;font-size:.92rem;color:var(--ok);font-weight:600}
+.legal{color:var(--suave);font-size:.8rem;max-width:1180px;margin:26px auto 0}
+.oculto{display:none}
+@media (prefers-reduced-motion:no-preference){button{transition:border-color .15s}}
+.conf-mem{margin-top:10px;border:1px solid var(--linha);border-radius:8px;padding:10px 12px;background:var(--papel)}
+.conf-mem.ok{border-color:var(--ok);background:var(--ok-claro)}
+.conf-mem.ruim{border-color:var(--erro)}
+.conf-mem ul{margin:6px 0 0;padding-left:20px}
+.modo-agro .so-avulso{display:none}
+.so-agro{display:none}
+.modo-agro .so-agro{display:inline-flex}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>if(!window.JSZip){document.write('<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"><\/script>');}</script>
+</head>
+<body>
+<header class="topo">
+  <h1>Ficha de Trabalho Técnico</h1>
+  <div class="sub">Preencha os dados do trabalho e gere o arquivo para enviar à Francisco Engenharia &amp; Imóveis. As peças técnicas (mapa, memorial, requerimento, declarações) saem com a logo e os dados do <b>seu</b> escritório.</div>
+  <div class="acoes">
+    <button id="bt-abrir" type="button" class="so-avulso">Abrir ficha salva…</button>
+    <button id="bt-exemplo" type="button" class="so-avulso">Ver exemplo</button>
+    <button id="bt-nova" type="button">Nova ficha</button>
+    <input id="in-abrir" type="file" accept=".json,application/json" class="oculto">
+  </div>
+</header>
+
+<div class="grade">
+  <nav class="indice" id="indice" aria-label="Etapas"></nav>
+  <main id="principal">
+
+  <!-- 1. ESCRITÓRIO -->
+  <section class="bloco" id="escritorio" data-titulo="Seu escritório">
+    <div class="cab"><span class="n">01</span><h2>Seu escritório</h2></div>
+    <p class="dica">Preencha uma vez: fica guardado neste computador e vai em todas as fichas. É o que aparece no cabeçalho dos documentos e no carimbo do mapa.</p>
+    <div class="logo-prev">
+      <img id="logo-img" alt="Logo do escritório" hidden>
+      <button type="button" id="bt-logo">Escolher logo…</button>
+      <button type="button" id="bt-logo-tirar" class="peq rem" hidden>Tirar</button>
+      <input type="file" id="in-logo" accept="image/png,image/jpeg" class="oculto">
+    </div>
+    <div class="campos" style="margin-top:14px">
+      <label class="c obr largo"><span>Nome do escritório / empresa</span><input id="e-empresa" data-k="escritorio.empresa"></label>
+      <label class="c largo"><span>Registros da empresa (CREA, CRECI, CNPJ…)</span><input id="e-registros" data-k="escritorio.registros" placeholder="CREA/SC 000000-0 · CNPJ 00.000.000/0001-00"></label>
+      <label class="c largo"><span>Endereço, telefone e e-mail do escritório</span><input id="e-contato" data-k="escritorio.contato" placeholder="Rua…, nº…, Centro, Lages/SC · (49) 0000-0000 · contato@…"></label>
+    </div>
+    <div class="sub3">Responsável técnico</div>
+    <div class="campos">
+      <label class="c obr"><span>Nome completo</span><input id="e-rt-nome" data-k="escritorio.rt.nome"></label>
+      <label class="c obr"><span>Título profissional</span><input id="e-rt-titulo" data-k="escritorio.rt.titulo" placeholder="Engenheiro Agrimensor"></label>
+      <label class="c obr"><span>Registro (como sai na assinatura)</span><input id="e-rt-registro" data-k="escritorio.rt.registro" placeholder="CREA/SC nº 000000-0"></label>
+      <label class="c"><span>Credenciamento INCRA</span><input id="e-rt-incra" data-k="escritorio.rt.credenciamento" class="mono" placeholder="ABCD"></label>
+      <label class="c"><span>Qualificação (nacionalidade, estado civil, profissão)</span><input id="e-rt-qual" data-k="escritorio.rt.qualificacao" placeholder="brasileiro, casado, engenheiro agrimensor"></label>
+      <label class="c"><span>RG e órgão</span><input id="e-rt-rg" data-k="escritorio.rt.rg" class="mono"></label>
+      <label class="c obr"><span>CPF</span><input id="e-rt-cpf" data-k="escritorio.rt.cpf" class="mono"></label>
+      <label class="c"><span>E-mail</span><input id="e-rt-email" data-k="escritorio.rt.email"></label>
+      <label class="c largo"><span>Endereço profissional</span><input id="e-rt-end" data-k="escritorio.rt.endereco"></label>
+    </div>
+    <div class="sub3">Como o cabeçalho vai sair</div>
+    <div class="cabecalho-prev" id="cab-prev"></div>
+  </section>
+
+  <!-- 2. PROCESSO E IMÓVEL -->
+  <section class="bloco" id="imovel" data-titulo="Processo e imóvel">
+    <div class="cab"><span class="n">02</span><h2>Processo e imóvel</h2></div>
+    <p class="dica">Dados do registro que vão no requerimento e no carimbo do mapa.</p>
+    <div class="campos">
+      <label class="c obr"><span>Tipo de processo</span><select id="t-processo" data-k="trabalho.processo">
+        <option value="retificacao">Retificação administrativa de área</option><option value="usucapiao">Usucapião</option>
+        <option value="estremacao">Estremação</option><option value="desmembramento">Desmembramento / unificação</option><option value="outro">Outro</option></select></label>
+      <label class="c obr"><span>Imóvel</span><select id="t-tipo" data-k="trabalho.tipo_imovel"><option value="urbano">Urbano</option><option value="rural">Rural</option></select></label>
+      <label class="c obr"><span>Matrícula nº</span><input id="t-mat" data-k="trabalho.matricula" class="mono"></label>
+      <label class="c"><span>Livro</span><input id="t-livro" data-k="trabalho.livro" class="mono"></label>
+      <label class="c"><span>Folha</span><input id="t-folha" data-k="trabalho.folha" class="mono"></label>
+      <label class="c obr"><span>Cartório (Ofício de Registro de Imóveis)</span><input id="t-cart" data-k="trabalho.cartorio" placeholder="Ofício de Registro de Imóveis da Comarca de São Joaquim/SC"></label>
+      <label class="c obr"><span>Município / UF</span><input id="t-mun" data-k="trabalho.municipio" placeholder="São Joaquim/SC"></label>
+      <label class="c"><span>Denominação (rural) ou lote/quadra</span><input id="t-den" data-k="trabalho.denominacao" placeholder="Fazenda Alecrim / Lote 05, Quadra B"></label>
+      <label class="c"><span>Endereço (rua, nº ou localidade)</span><input id="t-end" data-k="trabalho.endereco"></label>
+      <label class="c"><span>Bairro</span><input id="t-bairro" data-k="trabalho.bairro"></label>
+      <label class="c"><span>Inscrição imobiliária / CCIR / código INCRA</span><input id="t-insc" data-k="trabalho.inscricao" class="mono"></label>
+      <label class="c"><span>Área registrada na matrícula (m²)</span><input id="t-area-reg" data-k="trabalho.area_registrada" class="mono"></label>
+      <label class="c"><span>Área levantada x registro</span><select id="t-sit" data-k="trabalho.situacao_area"><option value="menor">Menor que a registrada</option><option value="maior">Maior que a registrada</option><option value="igual">Sem alteração de área</option></select></label>
+      <label class="c"><span>ART / TRT / RRT nº</span><input id="t-art" data-k="trabalho.art" class="mono"></label>
+      <label class="c"><span>Período do levantamento</span><input id="t-per" data-k="trabalho.periodo" placeholder="02/06/2026 a 20/06/2026"></label>
+      <label class="c"><span>Valor da avaliação (R$)</span><input id="t-valor" data-k="trabalho.valor_avaliacao" class="mono" placeholder="150.000,00"></label>
+      <label class="c"><span>Data da avaliação</span><input id="t-dval" data-k="trabalho.data_avaliacao" placeholder="dd/mm/aaaa"></label>
+    </div>
+  </section>
+
+  <!-- 3. PROPRIETÁRIOS -->
+  <section class="bloco" id="proprietarios" data-titulo="Proprietários / requerentes">
+    <div class="cab"><span class="n">03</span><h2>Proprietários / requerentes</h2></div>
+    <p class="dica">Uma ficha para cada proprietário. Para quem já faleceu, escolha <b>Espólio</b> e preencha o inventariante. Para empresa, escolha <b>Pessoa jurídica</b> e o representante. O cônjuge entra na ficha do proprietário.</p>
+    <div id="lista-props"></div>
+    <div class="linha-botoes"><button type="button" class="prim" id="bt-add-prop">+ Adicionar proprietário</button></div>
+  </section>
+
+  <!-- 4. MATRÍCULA ATUAL -->
+  <section class="bloco" id="matricula" data-titulo="Descrição da matrícula">
+    <div class="cab"><span class="n">04</span><h2>Descrição atual da matrícula</h2></div>
+    <p class="dica">Copie da certidão a descrição do imóvel como está registrada (vai transcrita no requerimento).</p>
+    <label class="c obr"><span>Descrição registrada</span><textarea id="t-desc" data-k="trabalho.descricao_matricula" rows="6" placeholder="Um terreno urbano, situado…, com a área de… confrontando…"></textarea></label>
+  </section>
+
+  <!-- 5. MEMORIAL -->
+  <section class="bloco" id="memorial" data-titulo="Memorial descritivo">
+    <div class="cab"><span class="n">05</span><h2>Memorial descritivo</h2></div>
+    <p class="dica">Cole o memorial descritivo completo, com as coordenadas e os confrontantes de cada trecho ("Inicia-se a descrição… ponto inicial…") e o bloco de assinaturas. Se tiver o arquivo (PDF certificado do SIGEF, Word ou planilha .ods do SIGEF), anexe: ele tem prioridade sobre o texto.</p>
+    <div class="arquivo">
+      <button type="button" id="bt-mem">Anexar arquivo do memorial…</button>
+      <span id="mem-nome" class="chip" hidden></span>
+      <button type="button" id="bt-mem-tirar" class="peq rem" hidden>Tirar</button>
+      <input type="file" id="in-mem" accept=".docx,.pdf,.ods,.txt" class="oculto">
+    </div>
+    <label class="c" style="margin-top:12px"><span>Ou cole o texto do memorial</span><textarea id="t-memo" class="memo" data-k="memorial.texto" placeholder="Inicia-se a descrição deste perímetro no vértice P-01, de coordenadas N 6.870.906,27 m e E 604.433,84 m; deste segue confrontando com RUA…"></textarea></label>
+    <div class="aviso" id="mem-info"></div>
+    <div class="conf-mem" id="mem-conf" hidden></div>
+  </section>
+
+  <!-- 6. CONFRONTANTES -->
+  <section class="bloco" id="confrontantes" data-titulo="Confrontantes">
+    <div class="cab"><span class="n">06</span><h2>Confrontantes (qualificação)</h2></div>
+    <p class="dica">Cadastre todos os vizinhos com <b>nome e matrícula</b> (vias e rios: escreva o nome da via ou do rio e deixe a matrícula em branco). CPF, endereço e representante quando tiver – vão nas cartas de anuência.</p>
+    <div id="lista-confs"></div>
+    <div class="linha-botoes"><button type="button" id="bt-add-conf">+ Adicionar confrontante</button></div>
+  </section>
+
+  <!-- 7. FOTOS E OBSERVAÇÕES -->
+  <section class="bloco" id="fotos" data-titulo="Fotos e observações">
+    <div class="cab"><span class="n">07</span><h2>Fotos e observações</h2></div>
+    <p class="dica">Fotos dos marcos para o relatório fotográfico. Escreva o código do vértice na legenda (ex.: MARCO P-21): as coordenadas entram junto no relatório.</p>
+    <div class="linha-botoes"><button type="button" id="bt-fotos">Adicionar fotos…</button><input type="file" id="in-fotos" accept="image/*" multiple class="oculto"></div>
+    <div class="fotos" id="lista-fotos"></div>
+    <label class="c" style="margin-top:16px"><span>Observações para a Francisco Engenharia</span><textarea id="t-obs" data-k="trabalho.observacoes" rows="3"></textarea></label>
+  </section>
+
+  <!-- 8. GERAR -->
+  <section class="bloco" id="gerar" data-titulo="Conferir e gerar">
+    <div class="cab"><span class="n">08</span><h2>Conferir e gerar o arquivo</h2></div>
+    <p class="dica">Confira o que falta. Pode gerar mesmo com pendências e completar depois: abra a ficha salva, ajuste e gere de novo.</p>
+    <ul class="pend-lista" id="pendencias"></ul>
+    <div class="linha-botoes">
+      <button type="button" class="prim" id="bt-gerar">Gerar arquivo para envio</button>
+      <button type="button" id="bt-copia" class="so-agro">Baixar uma cópia</button>
+      <span class="msg" id="msg-gerar" role="status"></span>
+    </div>
+    <p class="dica" style="margin-top:12px">O arquivo <code>FICHA_….json</code> leva tudo: dados, memorial, fotos e a logo. Envie por e-mail ou WhatsApp para a Francisco Engenharia. Nenhum dado sai deste computador sem você enviar o arquivo.</p>
+  </section>
+  </main>
+</div>
+<p class="legal">Os rascunhos ficam guardados apenas neste navegador. Para trocar de computador, use "Gerar arquivo" e depois "Abrir ficha salva".</p>
+
+<script>
+(function(){
+"use strict";
+var FORMATO = "ficha-trabalho-tecnico", VERSAO = 1;
+var CH_ESC = "ftt.escritorio.v1", CH_RASC = "ftt.rascunho.v1";
+// Dentro da Agroteca: ficha.html?servico=<id> – um rascunho por serviço e "Enviar ao escritório" em vez de baixar
+var PARAMS = new URLSearchParams(location.search), SERVICO = PARAMS.get("servico") || "";
+var AGRO = !!SERVICO && window.parent !== window;
+if(AGRO){ CH_RASC = "ftt.rascunho.v1." + SERVICO.replace(/[^A-Za-z0-9_-]/g,""); document.documentElement.classList.add("modo-agro"); }
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+function ler(ch){ try{ return JSON.parse(localStorage.getItem(ch)||"null"); }catch(e){ return null; } }
+function gravar(ch,v){ try{ localStorage.setItem(ch, JSON.stringify(v)); return true; }catch(e){ return false; } }
+
+function pessoaVazia(){ return {nome:"",sexo:"M",nacionalidade:"brasileira",estado_civil:"",regime:"",profissao:"",nascimento:"",filiacao:"",cpf:"",rg:"",endereco:"",email:"",telefone:""}; }
+function propVazio(){ return {tipo:"PF", pessoa:pessoaVazia(), conjuge:null, conjuge_assina:true,
+  pj:{razao:"",cnpj:"",sede:""}, representante:Object.assign(pessoaVazia(),{cargo:""}),
+  espolio:{falecido:"",cpf:"",obito:"",certidao:"",inventario:"extrajudicial",processo:""}}; }
+function novo(){ return {formato:FORMATO, versao:VERSAO, escritorio:ler(CH_ESC)||{empresa:"",registros:"",contato:"",logo:"",rt:{}},
+  trabalho:{processo:"retificacao",tipo_imovel:"urbano",situacao_area:"menor"}, proprietarios:[propVazio()], confrontantes:[],
+  memorial:{texto:"",arquivo:null}, fotos:[]}; }
+var D = ler(CH_RASC) || novo();
+if(!D.escritorio || !D.escritorio.empresa){ var e0 = ler(CH_ESC); if(e0) D.escritorio = e0; }
+
+function get(o,path){ return path.split(".").reduce(function(a,k){ return a==null?undefined:a[k]; }, o); }
+function set(o,path,v){ var ks=path.split("."), a=o; for(var i=0;i<ks.length-1;i++){ if(a[ks[i]]==null) a[ks[i]]={}; a=a[ks[i]]; } a[ks[ks.length-1]]=v; }
+
+var salvarT=null;
+function salvar(){ clearTimeout(salvarT); salvarT=setTimeout(function(){
+  gravar(CH_ESC, D.escritorio);
+  if(!gravar(CH_RASC, D)){   // fotos e anexos grandes podem não caber: guarda sem eles
+    var leve=JSON.parse(JSON.stringify(D)); leve.fotos=[]; if(leve.memorial) leve.memorial.arquivo=null; gravar(CH_RASC, leve);
+  }
+}, 300); }
+
+// ---------- ligação dos campos simples
+function ligar(raiz){
+  (raiz||document).querySelectorAll("[data-k]").forEach(function(el){
+    var v=get(D, el.dataset.k); el.value = v==null?"":v;
+    el.oninput = el.onchange = function(){ set(D, el.dataset.k, el.value); salvar(); atualizar(); };
+  });
+}
+
+// ---------- logo
+function reduzirImagem(arq, max, tipo, qual, cb){
+  var fr=new FileReader(); fr.onload=function(){ var im=new Image(); im.onload=function(){
+    var k=Math.min(1, max/Math.max(im.width,im.height)), c=document.createElement("canvas");
+    c.width=Math.round(im.width*k); c.height=Math.round(im.height*k);
+    var g=c.getContext("2d"); if(tipo==="image/jpeg"){ g.fillStyle="#fff"; g.fillRect(0,0,c.width,c.height); }
+    g.drawImage(im,0,0,c.width,c.height); cb(c.toDataURL(tipo, qual)); }; im.src=fr.result; }; fr.readAsDataURL(arq);
+}
+$("bt-logo").onclick=function(){ $("in-logo").click(); };
+$("in-logo").onchange=function(e){ var f=e.target.files[0]; if(!f) return; reduzirImagem(f, 500, "image/png", 1, function(u){ D.escritorio.logo=u; salvar(); atualizar(); }); e.target.value=""; };
+$("bt-logo-tirar").onclick=function(){ D.escritorio.logo=""; salvar(); atualizar(); };
+
+// ---------- proprietários
+var EC=["","solteiro(a)","casado(a)","divorciado(a)","viúvo(a)","separado(a) judicialmente","em união estável"];
+var REG=["","comunhão parcial de bens","comunhão universal de bens","separação total de bens","separação obrigatória de bens","participação final nos aquestos"];
+function opts(lista,v){ return lista.map(function(x){ return '<option value="'+esc(x)+'"'+(x===v?" selected":"")+'>'+(x||"—")+'</option>'; }).join(""); }
+function camposPessoa(pref, p, comConj){
+  var h='<div class="campos">'+
+   '<label class="c obr largo"><span>Nome completo</span><input data-p="'+pref+'nome" value="'+esc(p.nome)+'"></label>'+
+   '<label class="c"><span>Sexo (para a concordância do texto)</span><select data-p="'+pref+'sexo"><option value="M"'+(p.sexo==="M"?" selected":"")+'>Masculino</option><option value="F"'+(p.sexo==="F"?" selected":"")+'>Feminino</option></select></label>'+
+   '<label class="c"><span>Nacionalidade</span><input data-p="'+pref+'nacionalidade" value="'+esc(p.nacionalidade)+'"></label>'+
+   '<label class="c obr"><span>Estado civil</span><select data-p="'+pref+'estado_civil">'+opts(EC,p.estado_civil)+'</select></label>'+
+   (comConj?'<label class="c"><span>Regime de bens</span><select data-p="'+pref+'regime">'+opts(REG,p.regime)+'</select></label>':'')+
+   '<label class="c obr"><span>Profissão</span><input data-p="'+pref+'profissao" value="'+esc(p.profissao)+'"></label>'+
+   '<label class="c"><span>Data de nascimento</span><input data-p="'+pref+'nascimento" value="'+esc(p.nascimento)+'" placeholder="dd/mm/aaaa"></label>'+
+   '<label class="c"><span>Filiação</span><input data-p="'+pref+'filiacao" value="'+esc(p.filiacao)+'" placeholder="filho(a) de … e …"></label>'+
+   '<label class="c obr"><span>CPF</span><input class="mono" data-p="'+pref+'cpf" value="'+esc(p.cpf)+'"></label>'+
+   '<label class="c obr"><span>RG e órgão expedidor</span><input class="mono" data-p="'+pref+'rg" value="'+esc(p.rg)+'"></label>'+
+   '<label class="c obr largo"><span>Endereço completo (rua, nº, bairro, cidade/UF, CEP)</span><input data-p="'+pref+'endereco" value="'+esc(p.endereco)+'"></label>'+
+   '<label class="c"><span>E-mail</span><input data-p="'+pref+'email" value="'+esc(p.email)+'" placeholder="se não tiver, deixe em branco"></label>'+
+   '<label class="c"><span>Telefone</span><input data-p="'+pref+'telefone" value="'+esc(p.telefone)+'"></label>';
+  if(pref.indexOf("representante")>=0) h+='<label class="c obr"><span>Qualidade (cargo)</span><input data-p="'+pref+'cargo" value="'+esc(p.cargo||"")+'" placeholder="sócio-administrador / inventariante / procurador"></label>';
+  return h+'</div>';
+}
+function renderProps(){
+  var box=$("lista-props"); box.innerHTML="";
+  D.proprietarios.forEach(function(pr,i){
+    var tipoTxt={PF:"Pessoa física",PJ:"Pessoa jurídica",ESP:"Espólio"}[pr.tipo];
+    var h='<div class="cartao" data-i="'+i+'"><div class="cc"><h3>Proprietário '+(i+1)+'</h3><span class="chip">'+tipoTxt+'</span>'+
+      '<label class="c" style="margin-left:auto;min-width:200px"><span>Tipo</span><select data-p="tipo"><option value="PF"'+(pr.tipo==="PF"?" selected":"")+'>Pessoa física</option><option value="PJ"'+(pr.tipo==="PJ"?" selected":"")+'>Pessoa jurídica (empresa)</option><option value="ESP"'+(pr.tipo==="ESP"?" selected":"")+'>Espólio (falecido)</option></select></label>'+
+      (D.proprietarios.length>1?'<button type="button" class="peq rem" data-acao="rem">Remover</button>':'')+'</div>';
+    if(pr.tipo==="PF"){
+      h+=camposPessoa("pessoa.", pr.pessoa, true);
+      if(pr.conjuge){ h+='<div class="sub3">Cônjuge / companheiro(a)</div>'+camposPessoa("conjuge.", pr.conjuge, false)+
+        '<div class="linha-botoes"><label class="c" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" data-p="conjuge_assina" style="width:auto"'+(pr.conjuge_assina?" checked":"")+'><span>O cônjuge assina o requerimento e o mapa</span></label><button type="button" class="peq rem" data-acao="semconj">Tirar cônjuge</button></div>'; }
+      else h+='<div class="linha-botoes"><button type="button" class="peq" data-acao="conj">+ Cônjuge / companheiro(a)</button></div>';
+    } else if(pr.tipo==="PJ"){
+      h+='<div class="campos"><label class="c obr largo"><span>Razão social</span><input data-p="pj.razao" value="'+esc(pr.pj.razao)+'"></label>'+
+         '<label class="c obr"><span>CNPJ</span><input class="mono" data-p="pj.cnpj" value="'+esc(pr.pj.cnpj)+'"></label>'+
+         '<label class="c obr largo"><span>Endereço da sede</span><input data-p="pj.sede" value="'+esc(pr.pj.sede)+'"></label></div>'+
+         '<div class="sub3">Representante legal</div>'+camposPessoa("representante.", pr.representante, false);
+    } else {
+      h+='<div class="campos"><label class="c obr largo"><span>Nome do falecido(a)</span><input data-p="espolio.falecido" value="'+esc(pr.espolio.falecido)+'"></label>'+
+         '<label class="c obr"><span>CPF do falecido(a)</span><input class="mono" data-p="espolio.cpf" value="'+esc(pr.espolio.cpf)+'"></label>'+
+         '<label class="c obr"><span>Data do óbito</span><input data-p="espolio.obito" value="'+esc(pr.espolio.obito)+'" placeholder="dd/mm/aaaa"></label>'+
+         '<label class="c largo"><span>Certidão de óbito (matrícula / cartório)</span><input data-p="espolio.certidao" value="'+esc(pr.espolio.certidao)+'"></label>'+
+         '<label class="c"><span>Inventário</span><select data-p="espolio.inventario"><option value="extrajudicial"'+(pr.espolio.inventario==="extrajudicial"?" selected":"")+'>Extrajudicial</option><option value="judicial"'+(pr.espolio.inventario==="judicial"?" selected":"")+'>Judicial</option><option value="não aberto"'+(pr.espolio.inventario==="não aberto"?" selected":"")+'>Ainda não aberto</option></select></label>'+
+         '<label class="c"><span>Nº do processo / escritura</span><input data-p="espolio.processo" value="'+esc(pr.espolio.processo)+'"></label></div>'+
+         '<div class="sub3">Inventariante</div>'+camposPessoa("representante.", pr.representante, false);
+    }
+    box.insertAdjacentHTML("beforeend", h+'</div>');
+  });
+  box.querySelectorAll(".cartao").forEach(function(c){
+    var pr=D.proprietarios[+c.dataset.i];
+    c.querySelectorAll("[data-p]").forEach(function(el){
+      var ev = el.type==="checkbox"?"change":(el.tagName==="SELECT"?"change":"input");
+      el.addEventListener(ev,function(){
+        var v = el.type==="checkbox"?el.checked:el.value;
+        set(pr, el.dataset.p, v); salvar();
+        if(el.dataset.p==="tipo"){ if(v==="ESP" && !pr.representante.cargo) pr.representante.cargo="inventariante"; renderProps(); }
+        atualizar();
+      });
+    });
+    c.querySelectorAll("[data-acao]").forEach(function(b){ b.onclick=function(){
+      var a=b.dataset.acao;
+      if(a==="rem") D.proprietarios.splice(+c.dataset.i,1);
+      if(a==="conj"){ pr.conjuge=pessoaVazia(); pr.conjuge.sexo = pr.pessoa.sexo==="M"?"F":"M"; }
+      if(a==="semconj") pr.conjuge=null;
+      salvar(); renderProps(); atualizar();
+    }; });
+  });
+}
+$("bt-add-prop").onclick=function(){ D.proprietarios.push(propVazio()); salvar(); renderProps(); atualizar(); };
+
+// ---------- confrontantes
+function renderConfs(){
+  var box=$("lista-confs"); box.innerHTML="";
+  D.confrontantes.forEach(function(c,i){
+    box.insertAdjacentHTML("beforeend",'<div class="cartao" data-i="'+i+'"><div class="cc"><h3>Confrontante '+(i+1)+'</h3><button type="button" class="peq rem" data-acao="rem" style="margin-left:auto">Remover</button></div><div class="campos">'+
+     '<label class="c largo"><span>Nome</span><input data-p="nome" value="'+esc(c.nome)+'"></label>'+
+     '<label class="c"><span>Matrícula / transcrição</span><input class="mono" data-p="matricula" value="'+esc(c.matricula)+'"></label>'+
+     '<label class="c"><span>CPF / CNPJ</span><input class="mono" data-p="cpf" value="'+esc(c.cpf)+'"></label>'+
+     '<label class="c"><span>Cônjuge</span><input data-p="conjuge" value="'+esc(c.conjuge)+'"></label>'+
+     '<label class="c"><span>Representante (espólio / empresa)</span><input data-p="representante" value="'+esc(c.representante)+'"></label>'+
+     '<label class="c largo"><span>Endereço</span><input data-p="endereco" value="'+esc(c.endereco)+'"></label></div></div>');
+  });
+  box.querySelectorAll(".cartao").forEach(function(cd){
+    var c=D.confrontantes[+cd.dataset.i];
+    cd.querySelectorAll("[data-p]").forEach(function(el){ el.oninput=function(){ c[el.dataset.p]=el.value; salvar(); atualizar(); }; });
+    cd.querySelector("[data-acao]").onclick=function(){ D.confrontantes.splice(+cd.dataset.i,1); salvar(); renderConfs(); };
+  });
+}
+$("bt-add-conf").onclick=function(){ D.confrontantes.push({nome:"",matricula:"",cpf:"",conjuge:"",representante:"",endereco:""}); salvar(); renderConfs(); };
+
+// ---------- conferência do memorial (mesmas regras de leitura do gerador: coordenadas, vértices e confrontantes)
+function norm(s){ return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().replace(/\s+/g," ").trim(); }
+function conferirTexto(t){
+  var s=String(t||"").replace(/\s+/g," ");
+  var utm=(s.match(/\bN\s*[:=]?\s*\d{1,2}\.?\d{3}\.?\d{3}(?:[,.]\d+)?\s*m?[^;]{0,60}?\bE\s*[:=]?\s*\d{3}\.?\d{3}(?:[,.]\d+)?/gi)||[]).length
+        +(s.match(/\bE\s*[:=]?\s*\d{3}\.?\d{3}(?:[,.]\d+)?\s*m?[^;]{0,60}?\bN\s*[:=]?\s*\d{1,2}\.?\d{3}\.?\d{3}/gi)||[]).length;
+  var geo=(s.match(/-?\d{1,2}\s*[°º]\s*\d{1,2}\s*['’′]\s*\d{1,2}(?:[,.]\d+)?\s*(?:["”″]|'')/g)||[]).length;
+  var dec=(s.match(/-\d{1,2}[,.]\d{5,}/g)||[]).length;
+  var vert=(s.match(/v[ée]rtice/gi)||[]).length;
+  var rx=/(?:confrontando|confronta(?:-se)?|limitando-se|fazendo divisa|divisando|lindeiro)\s+(?:neste trecho\s+)?(?:com|a)[\s,;]+([^;:]{3,140}?)(?=,\s*(?:com|até|ate|por|no|na|em|de\s+\d|seguindo|azimute|rumo)|;|:|\.\s|$)/gi, m, confs=[], vistos={};
+  while((m=rx.exec(s))){ var n=m[1].replace(/^[\s,;.\-–]+/,"").replace(/^(terras|terreno|im[óo]vel|propriedade)\s+(de|do|da|dos|das)\s+/i,"").replace(/\s+(e|com)\s+(os\s+)?seguintes.*$/i,"").trim();
+    var k=norm(n).slice(0,60); if(k && !vistos[k]){ vistos[k]=1; confs.push(n); } }
+  var inicio=/inicia-?\s*se/i.test(s);
+  var tipo=utm>=3?"UTM":((geo>=6||dec>=6)?"latitude/longitude":"");
+  var motivos=[];
+  if(!tipo) motivos.push("não achei as coordenadas dos vértices (UTM N/E ou latitude/longitude)");
+  if(vert<3) motivos.push("não achei os vértices (\"vértice …\")");
+  if(!confs.length) motivos.push("não achei os confrontantes (\"confrontando com …\" em cada trecho)");
+  if(!inicio) motivos.push("falta o início \"Inicia-se a descrição…\" (confira se é o memorial completo)");
+  return {ok:!!tipo && vert>=3 && confs.length>0, tipo:tipo, vertices:vert, coordenadas:Math.max(utm,Math.floor(geo/2),Math.floor(dec/2)), confrontantes:confs, motivos:motivos, inicio:inicio};
+}
+function textoDocx(base64, cb){
+  if(!window.JSZip){ cb(null,"leitor do Word não carregou (sem internet?)"); return; }
+  JSZip.loadAsync(base64,{base64:true}).then(function(z){ var f=z.file("word/document.xml"); if(!f) throw new Error("não é um Word (.docx)"); return f.async("string"); })
+    .then(function(x){ x=x.replace(/<w:tab\/>/g," ").replace(/<\/w:p>/g,"\n").replace(/<[^>]+>/g,"")
+      .replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,"&"); cb(x); })
+    .catch(function(e){ cb(null, e.message||String(e)); });
+}
+function conferirMemorial(){
+  var a=D.memorial.arquivo;
+  if(a && /\.docx$/i.test(a.nome)){ textoDocx(a.base64,function(t,erro){ D.memorial.conferencia = t ? conferirTexto(t) : {ok:false, motivos:["não consegui ler o Word: "+erro], confrontantes:[]}; salvar(); atualizar(); }); return; }
+  if(a){ D.memorial.conferencia={ok:true, manual:true, motivos:[], confrontantes:[], tipo:"", vertices:0}; salvar(); atualizar(); return; }
+  D.memorial.conferencia = (D.memorial.texto||"").trim() ? conferirTexto(D.memorial.texto) : null; atualizar();
+}
+function confsSemCadastro(){
+  var c=D.memorial.conferencia; if(!c || !c.confrontantes) return [];
+  var cad=(D.confrontantes||[]).map(function(x){ return norm(x.nome); }).filter(Boolean);
+  return c.confrontantes.filter(function(n){ var k=norm(n); return !cad.some(function(q){ return q && (k.indexOf(q)>-1 || q.indexOf(k)>-1); }); });
+}
+function mostrarConferencia(){
+  var box=$("mem-conf"), c=D.memorial.conferencia;
+  if(!c){ box.hidden=true; return; }
+  box.hidden=false; box.className="conf-mem "+(c.ok?"ok":"ruim");
+  if(c.manual){ box.innerHTML="<b>Arquivo anexado ("+esc((D.memorial.arquivo||{}).nome)+").</b> A conferência automática é feita no Word; PDF e planilha do SIGEF são conferidos no escritório."; return; }
+  var sem=confsSemCadastro();
+  box.innerHTML=(c.ok?"<b>✔ Memorial legível pelo sistema</b>":"<b>✖ O sistema não vai conseguir ler este memorial</b>")+
+    (c.tipo?" – coordenadas em "+esc(c.tipo)+", "+c.vertices+" menções a vértice":"")+
+    (c.motivos.length?"<ul>"+c.motivos.map(function(m){return "<li>"+esc(m)+"</li>";}).join("")+"</ul>":"")+
+    (c.confrontantes.length?"<div style='margin-top:6px'>Confrontantes encontrados no memorial ("+c.confrontantes.length+"): "+c.confrontantes.map(esc).join(" · ")+"</div>":"")+
+    (sem.length?"<div style='margin-top:6px;color:var(--pend)'>Ainda não cadastrados na etapa 6: "+sem.map(esc).join(" · ")+"</div>":"");
+}
+
+// ---------- memorial
+$("bt-mem").onclick=function(){ $("in-mem").click(); };
+$("in-mem").onchange=function(e){ var f=e.target.files[0]; if(!f) return;
+  if(f.size>15*1024*1024){ $("mem-info").textContent="O arquivo tem mais de 15 MB. Envie o PDF do SIGEF ou o Word, sem imagens escaneadas."; return; }
+  var fr=new FileReader(); fr.onload=function(){ D.memorial.arquivo={nome:f.name,tipo:f.type,base64:String(fr.result).split(",")[1]}; salvar(); conferirMemorial(); }; fr.readAsDataURL(f); e.target.value=""; };
+$("bt-mem-tirar").onclick=function(){ D.memorial.arquivo=null; salvar(); conferirMemorial(); };
+var confT=null;
+$("t-memo").addEventListener("input",function(){ clearTimeout(confT); confT=setTimeout(function(){ if(!D.memorial.arquivo) conferirMemorial(); },600); });
+
+// ---------- fotos
+$("bt-fotos").onclick=function(){ $("in-fotos").click(); };
+$("in-fotos").onchange=function(e){ Array.prototype.forEach.call(e.target.files,function(f){
+  reduzirImagem(f,1600,"image/jpeg",0.85,function(u){ D.fotos.push({nome:f.name,legenda:"MARCO "+(D.fotos.length+1),base64:u.split(",")[1]}); salvar(); renderFotos(); atualizar(); }); }); e.target.value=""; };
+function renderFotos(){
+  var box=$("lista-fotos"); box.innerHTML="";
+  D.fotos.forEach(function(f,i){
+    box.insertAdjacentHTML("beforeend",'<div class="foto" data-i="'+i+'"><img alt="Foto '+(i+1)+'" src="data:image/jpeg;base64,'+f.base64+'"><div class="p">'+
+      '<input data-p="legenda" value="'+esc(f.legenda)+'" aria-label="Legenda da foto '+(i+1)+'"><button type="button" class="peq rem">Remover</button></div></div>');
+  });
+  box.querySelectorAll(".foto").forEach(function(el){ var f=D.fotos[+el.dataset.i];
+    el.querySelector("input").oninput=function(){ f.legenda=this.value; salvar(); };
+    el.querySelector("button").onclick=function(){ D.fotos.splice(+el.dataset.i,1); salvar(); renderFotos(); atualizar(); }; });
+}
+
+// ---------- pendências e estado das etapas
+function vazio(v){ return v==null || String(v).trim()===""; }
+function pendencias(){
+  var P={escritorio:[],imovel:[],proprietarios:[],matricula:[],memorial:[],confrontantes:[],fotos:[]};
+  var e=D.escritorio||{}, rt=e.rt||{};
+  if(vazio(e.empresa)) P.escritorio.push("Nome do escritório");
+  if(vazio(e.logo)) P.escritorio.push("Logo do escritório (sem ela, os documentos saem sem logo)");
+  ["nome","titulo","registro","cpf"].forEach(function(k){ if(vazio(rt[k])) P.escritorio.push("Responsável técnico: "+{nome:"nome",titulo:"título",registro:"registro",cpf:"CPF"}[k]); });
+  var t=D.trabalho||{};
+  [["matricula","Matrícula"],["cartorio","Cartório"],["municipio","Município/UF"]].forEach(function(x){ if(vazio(t[x[0]])) P.imovel.push(x[1]); });
+  if(t.processo==="retificacao" && vazio(t.valor_avaliacao)) P.imovel.push("Valor da avaliação (vai no requerimento)");
+  D.proprietarios.forEach(function(pr,i){
+    var n="Proprietário "+(i+1)+": ";
+    function pes(p,rot){ ["nome","estado_civil","profissao","cpf","rg","endereco"].forEach(function(k){ if(vazio(p[k])) P.proprietarios.push(n+rot+{nome:"nome",estado_civil:"estado civil",profissao:"profissão",cpf:"CPF",rg:"RG",endereco:"endereço"}[k]); }); }
+    if(pr.tipo==="PF"){ pes(pr.pessoa,""); if(pr.conjuge) pes(pr.conjuge,"cônjuge – "); if(/casad|uni/.test(pr.pessoa.estado_civil||"") && !pr.conjuge) P.proprietarios.push(n+"estado civil indica cônjuge, mas ele não foi cadastrado"); }
+    else if(pr.tipo==="PJ"){ if(vazio(pr.pj.razao)) P.proprietarios.push(n+"razão social"); if(vazio(pr.pj.cnpj)) P.proprietarios.push(n+"CNPJ"); pes(pr.representante,"representante – "); }
+    else { if(vazio(pr.espolio.falecido)) P.proprietarios.push(n+"nome do falecido"); if(vazio(pr.espolio.obito)) P.proprietarios.push(n+"data do óbito"); pes(pr.representante,"inventariante – "); }
+  });
+  if(vazio(t.descricao_matricula)) P.matricula.push("Descrição atual da matrícula");
+  if(!D.memorial.arquivo && vazio(D.memorial.texto)) P.memorial.push("Memorial descritivo (anexe o Word ou cole o texto)");
+  else if(D.memorial.conferencia && !D.memorial.conferencia.ok) P.memorial.push("Memorial: "+D.memorial.conferencia.motivos.join("; "));
+  if(!(D.confrontantes||[]).some(function(c){ return !vazio(c.nome); })) P.confrontantes.push("Cadastre os confrontantes (nome e matrícula)");
+  (D.confrontantes||[]).forEach(function(c,i){ if(!vazio(c.nome) && vazio(c.matricula) && !/\b(rua|avenida|av\.|estrada|rodovia|travessa|servid[aã]o|rio|arroio|sanga|c[oó]rrego|lajeado|ribeir[aã]o|via|caminho|BR-|SC-)/i.test(c.nome)) P.confrontantes.push("Confrontante "+(i+1)+" ("+c.nome+"): falta a matrícula"); });
+  confsSemCadastro().forEach(function(n){ P.confrontantes.push("Confrontante do memorial não cadastrado: "+n); });
+  return P;
+}
+function atualizar(){
+  // logo e prévia do cabeçalho
+  var e=D.escritorio||{};
+  $("logo-img").hidden=!e.logo; $("bt-logo-tirar").hidden=!e.logo; if(e.logo) $("logo-img").src=e.logo;
+  $("cab-prev").innerHTML=(e.logo?'<img alt="" src="'+e.logo+'">':'')+'<div><b>'+esc(e.empresa||"NOME DO ESCRITÓRIO")+'</b><small>'+esc(e.registros||"Registros da empresa")+'</small><small>'+esc(e.contato||"Endereço · telefone · e-mail")+'</small></div>';
+  // memorial
+  var a=D.memorial.arquivo; $("mem-nome").hidden=!a; $("bt-mem-tirar").hidden=!a; if(a) $("mem-nome").textContent=a.nome;
+  var txt=D.memorial.texto||"", nv=(txt.match(/v[ée]rtice/gi)||[]).length;
+  $("mem-info").textContent = a ? "Arquivo anexado: "+a.nome+". Ele será usado no lugar do texto." :
+    (txt.trim() ? "Texto colado: "+txt.length.toLocaleString("pt-BR")+" caracteres, "+nv+" menções a vértice." : "Nenhum memorial ainda.");
+  mostrarConferencia();
+  // pendências
+  var P=pendencias(), ul=$("pendencias"), tot=0; ul.innerHTML="";
+  Object.keys(P).forEach(function(k){ P[k].forEach(function(x){ tot++; ul.insertAdjacentHTML("beforeend","<li>"+esc(x)+"</li>"); }); });
+  if(!tot) ul.innerHTML='<li class="okk">Tudo preenchido. Pode gerar o arquivo.</li>';
+  // índice
+  document.querySelectorAll(".indice a").forEach(function(l){ var k=l.dataset.s, st=l.querySelector(".st");
+    st.className="st "+((P[k]||[]).length?"pend":(k==="gerar"?(tot?"pend":"ok"):"ok")); });
+  // campos obrigatórios vazios
+  document.querySelectorAll("label.c.obr input, label.c.obr select, label.c.obr textarea").forEach(function(el){ el.classList.toggle("vazio", vazio(el.value)); });
+}
+function montarIndice(){
+  var nav=$("indice"); nav.innerHTML="";
+  document.querySelectorAll("section.bloco").forEach(function(s,i){
+    nav.insertAdjacentHTML("beforeend",'<a href="#'+s.id+'" data-s="'+s.id+'"><span class="n">'+String(i+1).padStart(2,"0")+'</span>'+esc(s.dataset.titulo)+'<span class="st"></span></a>');
+  });
+}
+
+// ---------- gerar / abrir / nova
+function nomeArquivo(){
+  var t=D.trabalho||{}, p=D.proprietarios[0]||{}, n=(p.tipo==="PJ"?p.pj.razao:(p.tipo==="ESP"?"ESPOLIO "+p.espolio.falecido:p.pessoa.nome))||"";
+  var s=("FICHA_MAT_"+(t.matricula||"SEM")+"_"+n).normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Za-z0-9]+/g,"_").replace(/_+$/,"").slice(0,70);
+  return s+".json";
+}
+function saidaJson(){ var saida=JSON.parse(JSON.stringify(D)); saida.formato=FORMATO; saida.versao=VERSAO; saida.gerado_em=new Date().toISOString();
+  if(AGRO) saida.origem={sistema:"agroteca", servico:SERVICO}; return saida; }
+function baixarCopia(){
+  var saida=saidaJson();
+  var blob=new Blob([JSON.stringify(saida,null,1)],{type:"application/json"}), url=URL.createObjectURL(blob), a=document.createElement("a");
+  a.href=url; a.download=nomeArquivo(); document.body.appendChild(a); a.click();
+  setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); },1500);
+  $("msg-gerar").textContent="Cópia salva: "+a.download+" (pasta de Downloads).";
+}
+function enviarAgroteca(){
+  var P=pendencias(), graves=[].concat(P.memorial, P.confrontantes.filter(function(x){return /^Cadastre/.test(x);}),
+    P.proprietarios.filter(function(x){return /: (nome|CPF)$/.test(x);}));
+  if(graves.length){ $("msg-gerar").textContent="Antes de enviar, corrija: "+graves.join(" · "); return; }
+  var tot=Object.keys(P).reduce(function(n,k){return n+P[k].length;},0);
+  if(tot && !confirm("Ainda há "+tot+" pendência(s) (veja a lista acima). Enviar assim mesmo? O escritório pode pedir os dados que faltam.")) return;
+  var saida=saidaJson(), txt=JSON.stringify(saida);
+  if(txt.length > 11*1024*1024){ $("msg-gerar").textContent="A ficha passou de 11 MB (fotos demais?). Tire algumas fotos e envie de novo."; return; }
+  var c=D.memorial.conferencia||{}, p0=D.proprietarios[0]||{};
+  var resumo={matricula:(D.trabalho||{}).matricula||"", proprietario:(p0.tipo==="PJ"?p0.pj.razao:(p0.tipo==="ESP"?"ESPÓLIO DE "+p0.espolio.falecido:p0.pessoa.nome))||"",
+    confrontantes:(D.confrontantes||[]).length, memorial:(D.memorial.arquivo||{}).nome||"texto", conferencia:{ok:!!c.ok, tipo:c.tipo||"", vertices:c.vertices||0, confrontantes:(c.confrontantes||[]).length},
+    pendencias:tot, escritorio:(D.escritorio||{}).empresa||""};
+  $("bt-gerar").disabled=true; $("msg-gerar").textContent="Enviando ao escritório…";
+  window.parent.postMessage({tipo:"agroteca-ficha", servico:SERVICO, nome:nomeArquivo(), conteudo:txt, resumo:resumo}, location.origin);
+}
+window.addEventListener("message",function(ev){
+  if(ev.origin!==location.origin || !ev.data) return;
+  var d=ev.data;
+  if(d.tipo==="agroteca-init"){            // dados do serviço para começar a ficha
+    var t=D.trabalho||(D.trabalho={}), im=d.imovel||{};
+    if(vazio(t.matricula) && im.matricula) t.matricula=im.matricula;
+    if(vazio(t.denominacao) && im.denominacao) t.denominacao=im.denominacao;
+    if(vazio(t.municipio) && im.municipioUf) t.municipio=im.municipioUf;
+    if(vazio(t.cartorio) && im.cartorio) t.cartorio=im.cartorio;
+    salvar(); tudo();
+  } else if(d.tipo==="agroteca-ficha-ok"){ $("bt-gerar").disabled=false; $("msg-gerar").textContent="✔ Ficha enviada ao escritório em "+new Date().toLocaleString("pt-BR")+". Se mudar algo, envie de novo."; }
+  else if(d.tipo==="agroteca-ficha-erro"){ $("bt-gerar").disabled=false; $("msg-gerar").textContent="Não foi enviada: "+(d.erro||"erro")+". Tente de novo."; }
+});
+if(AGRO){
+  $("bt-gerar").textContent="Enviar ficha ao escritório";
+  $("bt-copia").onclick=baixarCopia;
+  document.querySelector("#gerar .dica:last-of-type").textContent="A ficha vai com os dados, o memorial, as fotos e a sua logo. O zip do levantamento você envia na tela do serviço (botão \"Enviar arquivo\"). O rascunho fica guardado neste aparelho até o envio.";
+  window.parent.postMessage({tipo:"agroteca-pronto", servico:SERVICO}, location.origin);
+}
+$("bt-gerar").onclick=function(){
+  if(AGRO){ enviarAgroteca(); return; }
+  var saida=saidaJson();
+  var blob=new Blob([JSON.stringify(saida,null,1)],{type:"application/json"}), url=URL.createObjectURL(blob), a=document.createElement("a");
+  a.href=url; a.download=nomeArquivo(); document.body.appendChild(a); a.click();
+  setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); },1500);
+  $("msg-gerar").textContent="Arquivo gerado: "+a.download+" (veja a pasta de Downloads).";
+};
+$("bt-abrir").onclick=function(){ $("in-abrir").click(); };
+$("in-abrir").onchange=function(e){ var f=e.target.files[0]; if(!f) return; var fr=new FileReader();
+  fr.onload=function(){ try{ var o=JSON.parse(fr.result); if(o.formato!==FORMATO) throw new Error("formato");
+    D=o; if(!D.memorial) D.memorial={texto:"",arquivo:null}; if(!D.fotos) D.fotos=[]; if(!D.confrontantes) D.confrontantes=[];
+    salvar(); tudo(); $("msg-gerar").textContent="Ficha aberta: "+f.name; }
+    catch(err){ $("msg-gerar").textContent="Esse arquivo não é uma ficha gerada por esta página."; } };
+  fr.readAsText(f); e.target.value=""; };
+var confirmaNova=false;
+$("bt-nova").onclick=function(){
+  if(!confirmaNova){ confirmaNova=true; $("bt-nova").textContent="Clique de novo para limpar a ficha"; setTimeout(function(){ confirmaNova=false; $("bt-nova").textContent="Nova ficha"; },4000); return; }
+  confirmaNova=false; $("bt-nova").textContent="Nova ficha";
+  var esc0=D.escritorio; D=novo(); D.escritorio=esc0; salvar(); tudo(); window.scrollTo(0,0);
+};
+$("bt-exemplo").onclick=function(){
+  var esc0=D.escritorio;
+  D={formato:FORMATO,versao:VERSAO,escritorio:esc0,
+    trabalho:{processo:"retificacao",tipo_imovel:"urbano",matricula:"4.344",livro:"2-V",folha:"122",cartorio:"Ofício de Registro de Imóveis da Comarca de São Joaquim/SC",
+      municipio:"São Joaquim/SC",denominacao:"Lote 176",endereco:"Rua Joaquim da Silva Dutra, esquina com a Rua Duque de Caxias, s/nº",bairro:"Martorano",
+      situacao_area:"maior",art:"CFT0000000000",periodo:"01/07/2026 a 03/08/2026",valor_avaliacao:"150.000,00",data_avaliacao:"03/08/2026",
+      descricao_matricula:"EXEMPLO – Um lote de terras de número 176, medindo 54,80 m de frente para a Rua Joaquim da Silva Dutra…, totalizando a área de 796,70 m²."},
+    proprietarios:[{tipo:"PJ",pessoa:pessoaVazia(),conjuge:null,conjuge_assina:true,pj:{razao:"EXEMPLO MARCENARIA LTDA",cnpj:"00.000.000/0001-00",sede:"Rua Exemplo, 175, Martorano, São Joaquim/SC"},
+      representante:Object.assign(pessoaVazia(),{nome:"MARIA EXEMPLO DA SILVA",sexo:"F",estado_civil:"casado(a)",profissao:"engenheira agrônoma",cpf:"000.000.000-00",rg:"0000000 SSP/SC",endereco:"Rua Exemplo, s/n, Monte Carlo, São Joaquim/SC, CEP 88600-000",cargo:"sócia administradora"}),
+      espolio:{falecido:"",cpf:"",obito:"",certidao:"",inventario:"extrajudicial",processo:""}}],
+    confrontantes:[], memorial:{texto:"EXEMPLO – Inicia-se a descrição deste perímetro no vértice P-21, de coordenadas N 6.870.906,27m e E 604.433,84m; deste segue confrontando com RUA DUQUE DE CAXIAS; com seguintes azimutes e distâncias: 165°39'54\" e de 1,44 m até o vértice P-22, …; ponto inicial da descrição deste perímetro.",arquivo:null}, fotos:[]};
+  tudo(); $("msg-gerar").textContent="Exemplo carregado (dados fictícios). Use \"Nova ficha\" para começar o seu.";
+};
+
+function tudo(){ ligar(); renderProps(); renderConfs(); renderFotos(); atualizar(); }
+montarIndice(); tudo();
+if(D.memorial && (D.memorial.arquivo || (D.memorial.texto||"").trim()) && !D.memorial.conferencia) conferirMemorial();
+})();
+</script>
+</body>
+</html>

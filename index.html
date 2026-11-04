@@ -1416,11 +1416,18 @@ function parcVerHtml(){
   if(t.tipo==="tecnico"&&(t.servico||t.procedimentos)) h+='<div class="card"><h2>Serviço técnico</h2>'+kv("Serviço",t.servico)+kv("Área do levantamento",t.areaServ)+(t.procedimentos?'<div class="kv"><span>Procedimentos</span><span>'+esc(t.procedimentos)+'</span></div>':'')+'</div>';
   if(t.descricao) h+='<div class="card"><h2>Descrição</h2><p style="white-space:pre-wrap">'+esc(t.descricao)+'</p></div>';
   // anexos do parceiro
+  h+=fichaCardHtml(t,esc_);
   h+='<div class="card"><h2>📎 Documentos do parceiro ('+(t.arquivos||[]).length+')</h2>'+
-    ((t.arquivos||[]).length?t.arquivos.map(function(a){return '<div class="docfile">📎 '+esc(a.nome)+(a.link?' · <a href="'+esc(a.link)+'" target="_blank">abrir</a>':'')+'</div>';}).join(""):'<div class="muted small">Nenhum.</div>')+'</div>';
+    ((t.arquivos||[]).length?t.arquivos.map(function(a){return '<div class="docfile">📎 '+esc(a.nome)+(a.link?' · <a href="'+esc(a.link)+'" target="_blank">abrir</a>':'')+'</div>';}).join(""):'<div class="muted small">Nenhum.</div>')+
+    (podeEditarParc(t)?'<div style="height:8px"></div><button class="btn sm" onclick="enviarArqParc(\''+t.id+'\')">⬆️ Enviar arquivo (zip do levantamento, PDF, fotos…)</button>'+
+      '<p class="muted small" style="margin-top:6px">Até ~12 MB por arquivo. Maior que isso, use “Anexar documento” com um link do Drive.</p>':'')+'</div>';
   // entregas (trabalhos prontos) — escritório anexa
   h+='<div class="card"><h2>✅ Trabalhos prontos p/ baixar ('+(t.entregas||[]).length+')</h2>'+
-    ((t.entregas||[]).length?t.entregas.map(function(e,i){return '<div class="docfile">📄 '+esc(e.nome)+(e.link?' · <a href="'+esc(e.link)+'" target="_blank"><b>baixar</b></a>':'')+' <span class="muted small">'+brData(e.quando)+'</span>'+(esc_?' <button class="btn sm sec" onclick="removeEntregaParc(\''+t.id+'\','+i+')">✕</button>':'')+'</div>';}).join(""):'<div class="muted small">'+(esc_?'Anexe aqui o trabalho concluído para o parceiro baixar.':'Ainda não há entregas. Você será avisado quando ficar pronto.')+'</div>')+
+    ((t.entregas||[]).length?t.entregas.map(function(e,i){ var lib=entregaLiberada(e);
+      if(!esc_ && !lib) return '<div class="docfile">🔒 '+esc(e.nome)+' <span class="pill warn" style="font-size:10px">pronto · aguardando liberação</span> <span class="muted small">'+brData(e.quando)+'</span></div>';
+      return '<div class="docfile">📄 '+esc(e.nome)+(e.link?' · <a href="'+esc(e.link)+'" target="_blank"><b>baixar</b></a>':'')+' <span class="muted small">'+brData(e.quando)+'</span>'+
+        (esc_?(lib?' <span class="pill ok" style="font-size:10px">liberado'+(e.liberadoEm?' '+brData(e.liberadoEm):'')+'</span>':' <span class="pill warn" style="font-size:10px">aguardando liberação</span> <button class="btn sm" onclick="liberarEntrega(\''+t.id+'\','+i+')">🔓 Liberar</button>')+
+          ' <button class="btn sm sec" onclick="removeEntregaParc(\''+t.id+'\','+i+')">✕</button>':'')+'</div>';}).join(""):'<div class="muted small">'+(esc_?'Anexe aqui o trabalho concluído para o parceiro baixar.':'Ainda não há entregas. Você será avisado quando ficar pronto.')+'</div>')+
     (esc_?'<div style="height:8px"></div><button class="btn sm" onclick="addEntregaParc(\''+t.id+'\')">⬆️ Anexar trabalho pronto</button>':'')+'</div>';
   // movimentos
   h+='<div class="card"><h2>🕓 Movimentações ('+(t.movimentos||[]).length+')</h2>'+
@@ -1440,9 +1447,74 @@ function addMovParc(id){ var t=trabById(id); if(!t)return; var el=document.getEl
   setTimeout(function(){ if(confirm("Avisar o "+(ehEscritorio()?"parceiro":"escritório")+" pelo WhatsApp?")){ ehEscritorio()?avisarParceiro(id):avisarDono(id); } },150); }
 function addEntregaParc(id){ var t=trabById(id); if(!t)return; var nome=prompt("Nome do trabalho pronto (ex.: Memorial descritivo.pdf):"); if(!nome)return;
   var link=prompt("Cole o LINK para download (Google Drive):","")||"";
-  if(!t.entregas)t.entregas=[]; t.entregas.push({nome:nome,link:link,quando:new Date().toISOString(),quem:user.nome});
-  registrarMov(t,"Trabalho anexado para download: "+nome); salvarTrab(); render();
-  setTimeout(function(){ if(confirm("Avisar o parceiro que o trabalho está pronto?")) avisarParceiro(id); },150); }
+  if(!t.entregas)t.entregas=[]; t.entregas.push({nome:nome,link:link,quando:new Date().toISOString(),quem:user.nome,liberado:false});
+  registrarMov(t,"Trabalho pronto: "+nome+" (aguardando liberação)"); salvarTrab(); render();
+  setTimeout(function(){ if(confirm("Avisar o parceiro que o trabalho está pronto? (ele só baixa depois que você clicar em Liberar)")) avisarParceiro(id); },150); }
+// entrega antiga (sem o campo) continua liberada; as novas nascem bloqueadas até o escritório liberar
+function entregaLiberada(e){ return !e || e.liberado!==false; }
+function liberarEntrega(id,i){ var t=trabById(id); if(!t||!t.entregas||!t.entregas[i])return; var e=t.entregas[i];
+  if(!confirm("Liberar o download de \""+e.nome+"\" para "+(t.parceiro||"o parceiro")+"?\n\nSe o arquivo está no seu Drive como restrito, compartilhe-o com o e-mail do parceiro (o link abre em seguida)."))return;
+  e.liberado=true; e.liberadoEm=new Date().toISOString(); e.liberadoPor=user.nome;
+  registrarMov(t,"Download liberado: "+e.nome); salvarTrab(); render();
+  if(e.link) try{ window.open(e.link,"_blank"); }catch(_){}
+  setTimeout(function(){ if(confirm("Avisar o parceiro que já pode baixar?")) avisarParceiro(id); },300); }
+// upload direto de arquivo do parceiro (zip do levantamento, PDF…) para o Drive, pelo servidor
+function enviarArqParc(id){ var t=trabById(id); if(!t)return;
+  var inp=document.createElement("input"); inp.type="file"; inp.style.display="none"; document.body.appendChild(inp);
+  inp.onchange=function(){ var f=inp.files&&inp.files[0]; document.body.removeChild(inp); if(!f)return;
+    uploadArquivoDrive(f,function(r){ var t2=trabById(id); if(!t2)return; if(!t2.arquivos)t2.arquivos=[];
+      t2.arquivos.push({nome:r.nome,link:r.link,quem:user.nome,quando:new Date().toISOString()});
+      registrarMov(t2,"Arquivo enviado: "+r.nome); salvarTrab(); render(); alert("Arquivo enviado: "+r.nome); }); };
+  inp.click(); }
+/* ---- ficha técnica do serviço (dados para as peças: qualificação, imóvel, confrontantes, memorial) ---- */
+function fichaCardHtml(t,esc_){
+  if(t.tipo && t.tipo!=="tecnico") return "";
+  var f=t.ficha, r=(f&&f.resumo)||{}, c=r.conferencia||{};
+  var h='<div class="card" style="border-left:4px solid var(--brand)"><h2>📋 Ficha técnica para as peças</h2>';
+  if(f){
+    h+='<div class="kv"><span>Enviada</span><span>'+brDH(f.quando)+' · '+esc(f.quem||"")+'</span></div>'+
+      '<div class="kv"><span>Proprietário</span><span>'+esc(r.proprietario||"—")+'</span></div>'+
+      '<div class="kv"><span>Matrícula</span><span>'+esc(r.matricula||"—")+'</span></div>'+
+      '<div class="kv"><span>Memorial</span><span>'+esc(r.memorial||"—")+(c.tipo?' · '+esc(c.tipo)+' · '+c.vertices+' vértices':'')+'</span></div>'+
+      '<div class="kv"><span>Confrontantes cadastrados</span><span>'+(r.confrontantes||0)+(c.confrontantes?' (memorial: '+c.confrontantes+')':'')+'</span></div>'+
+      '<div class="kv"><span>Pendências na ficha</span><span>'+(r.pendencias?'<span class="pill warn">'+r.pendencias+'</span>':'<span class="pill ok">nenhuma</span>')+'</span></div>';
+  } else h+='<p class="muted small">'+(esc_?'O parceiro ainda não enviou a ficha.':'Preencha a ficha com a qualificação do proprietário (ou usucapiente), os dados do imóvel, os confrontantes (nome e matrícula) e o memorial em Word. O sistema confere o memorial antes de enviar.')+'</p>';
+  h+='<div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px">';
+  if(podeEditarParc(t) && !esc_) h+='<button class="btn" onclick="abrirFicha(\''+t.id+'\')">📋 '+(f?'Abrir / atualizar a ficha':'Preencher a ficha')+'</button>';
+  if(f&&f.link) h+='<a class="btn '+(esc_?'':'sec')+'" href="'+esc(f.link)+'" target="_blank">⬇️ '+(esc_?'Baixar ficha para o gerador (.json)':'Ver o arquivo enviado')+'</a>';
+  if(esc_) h+='<button class="btn sec" onclick="abrirFicha(\''+t.id+'\')">Ver formulário</button>';
+  h+='</div>'+(esc_&&f?'<p class="muted small" style="margin-top:6px">No gerador: Abrir trabalho → <b>Importar ficha de terceiro…</b> e escolha o arquivo baixado. As peças saem com a logo e o responsável técnico do parceiro.</p>':'')+'</div>';
+  return h;
+}
+var fichaServ=null;
+function abrirFicha(id){ var t=trabById(id); if(!t)return; fichaServ=id; fecharFicha(true);
+  var d=document.createElement("div"); d.id="fichaOverlay";
+  d.style.cssText="position:fixed;inset:0;z-index:9999;background:rgba(15,42,99,.35);display:flex;flex-direction:column";
+  d.innerHTML='<div style="background:#fff;display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid #d8e1ef">'+
+    '<b style="flex:1">📋 Ficha técnica · '+esc(t.titulo||(t.imovel&&t.imovel.denominacao)||"serviço")+'</b>'+
+    '<button class="btn sm sec" onclick="fecharFicha()">Fechar</button></div>'+
+    '<iframe id="fichaFrame" src="ficha.html?servico='+encodeURIComponent(id)+'&v=1" title="Ficha técnica" style="flex:1;width:100%;border:0;background:#fff"></iframe>';
+  document.body.appendChild(d); }
+function fecharFicha(silencioso){ var d=document.getElementById("fichaOverlay"); if(d) d.parentNode.removeChild(d); }
+function b64Utf8(txt){ var bytes=new TextEncoder().encode(txt), bin="", i, CH=0x8000; for(i=0;i<bytes.length;i+=CH){ bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CH)); } return btoa(bin); }
+window.addEventListener("message",function(ev){
+  if(ev.origin!==location.origin || !ev.data) return;
+  var d=ev.data, fr=document.getElementById("fichaFrame");
+  function responder(m){ try{ fr&&fr.contentWindow.postMessage(m, location.origin); }catch(_){} }
+  if(d.tipo==="agroteca-pronto"){ var t0=trabById(d.servico); if(t0) responder({tipo:"agroteca-init", imovel:t0.imovel||{}, cliente:t0.cliente||{}, parceiro:t0.parceiro||""}); return; }
+  if(d.tipo!=="agroteca-ficha") return;
+  var t=trabById(d.servico); if(!t){ responder({tipo:"agroteca-ficha-erro", erro:"serviço não encontrado"}); return; }
+  apiPost('uploadArquivo',{nome:d.nome, base64:'data:application/json;base64,'+b64Utf8(d.conteudo), mime:'application/json'}).then(function(r){
+    if(!r || !(r.ok||r.url)){ responder({tipo:"agroteca-ficha-erro", erro:(r&&r.erro)||"falha no envio"}); return; }
+    var agora=new Date().toISOString(), t2=trabById(d.servico)||t;
+    t2.ficha={nome:d.nome, link:r.url, quando:agora, quem:user.nome, resumo:d.resumo||{}};
+    if(!t2.arquivos)t2.arquivos=[]; t2.arquivos.push({nome:"Ficha técnica – "+d.nome, link:r.url, quem:user.nome, quando:agora, ficha:true});
+    if(d.resumo && d.resumo.matricula && t2.imovel && !t2.imovel.matricula) t2.imovel.matricula=d.resumo.matricula;
+    registrarMov(t2,"Ficha técnica enviada ("+d.nome+")"+(d.resumo&&d.resumo.pendencias?" com "+d.resumo.pendencias+" pendência(s)":"")); salvarTrab();
+    responder({tipo:"agroteca-ficha-ok"});
+    setTimeout(function(){ fecharFicha(); render(); if(confirm("Ficha enviada. Avisar o escritório pelo WhatsApp?")) avisarDono(t2.id); },900);
+  }).catch(function(){ responder({tipo:"agroteca-ficha-erro", erro:"falha de rede"}); });
+});
 function removeEntregaParc(id,i){ var t=trabById(id); if(!t)return; t.entregas.splice(i,1); salvarTrab(); render(); }
 function msgAndamento(t){
   var last=(t.movimentos&&t.movimentos.length)?t.movimentos[t.movimentos.length-1].texto:t.status;
