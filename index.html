@@ -761,14 +761,19 @@ function termosHtml(){
   return '<div class="login"><h2 style="color:var(--brand-dark)">Termos de Uso e Privacidade</h2>'+
     '<div class="card" style="max-height:46vh;overflow:auto;font-size:12px;white-space:pre-wrap">'+esc(TEXTO_TERMOS)+'</div>'+
     '<label class="chkbox" style="margin-top:10px"><input type="checkbox" id="chkTermos"> Li e <b>Aceito</b> os Termos de Uso e a Política de Privacidade (LGPD).</label>'+
-    '<div style="height:8px"></div><button class="btn" style="width:100%" onclick="aceitarTermosAcao()">Continuar</button>'+
+    '<div style="height:8px"></div><button class="btn" style="width:100%" id="btnTermos" onclick="aceitarTermosAcao()">Continuar</button>'+
     '<button class="btn sec" style="width:100%;margin-top:8px" onclick="sair()">Sair</button></div>';
 }
 function aceitarTermosAcao(){
   if(!(document.getElementById('chkTermos')||{}).checked){ alert('Você precisa aceitar para continuar.'); return; }
-  apiPost('aceitarTermos',{versao:TERMOS_VERSAO}).then(function(r){
-    if(r&&r.ok){ user.termosAceitos=true; user.primeiroAcesso=false; entrarApp(); } else alert('Falha ao registrar o aceite.');
-  });
+  var b=document.getElementById('btnTermos'); if(b){ if(b.disabled) return; b.disabled=true; b.textContent='Registrando o aceite…'; }
+  function volta(msg){ if(b){ b.disabled=false; b.textContent='Continuar'; } alert(msg); }
+  apiPostTimeout('aceitarTermos',{versao:TERMOS_VERSAO},25000).then(function(r){
+    if(r&&r.ok){ user.termosAceitos=true; user.primeiroAcesso=false; entrarApp(); return; }
+    var e=(r&&r.erro)||'';
+    if(/sess|revog/i.test(e)){ alert('Sua sessão expirou. Entre de novo com o PIN.'); sair(); return; }
+    volta('Não consegui registrar o aceite'+(e?(': '+e):'.')+' Tente de novo.');
+  }).catch(function(err){ volta('Sem resposta do servidor ('+((err&&err.message)||'falha de conexão')+'). Confira a internet e tente de novo.'); });
 }
 var SESSAO_IDLE_MS=60*60*1000; // 1 hora de inatividade
 function hojeStr(){ return new Date().toISOString().slice(0,10); }
