@@ -468,6 +468,7 @@ function completude(d){ var r=0; DOCS.forEach(function(n){ if(d.docs[n]&&d.docs[
 function render(){
   var app=document.getElementById("app");
   if(!user && conviteToken){ app.innerHTML=conviteHtml(); app.insertAdjacentHTML('beforeend',bannerPwaHtml()); return; }
+  if(!user && esqueciEtapa){ app.innerHTML=esqueciHtml(); return; }
   if(!user){ app.innerHTML=loginHtml(); app.insertAdjacentHTML('beforeend',bannerPwaHtml()); return; }
   if(user.pinVencido || trocaModo){ app.innerHTML=trocaSenhaHtml(); return; }
   if(fluxoLogin==='cadastro'){ app.innerHTML=cadastroHtml(); return; }
@@ -676,6 +677,7 @@ function loginHtml(){
     '<label class="f" style="margin-top:10px">Senha</label>'+
     '<input type="password" id="loginPin" autocomplete="current-password" placeholder="••••" onkeydown="if(event.key===\'Enter\')entrar()">'+
     '<div style="height:14px"></div><button class="btn" id="btnEntrar" style="width:100%" onclick="entrar()">Entrar</button>'+
+    '<p class="small" style="text-align:center;margin:12px 0 0"><a href="#" onclick="abrirEsqueci();return false">Esqueci minha senha</a></p>'+
     '<p class="muted small" style="text-align:center;margin-top:16px;opacity:.8">Acesso restrito · gestão rural integrada</p></div>';
 }
 /* ---- convite do produtor (link mágico, sem e-mail) ---- */
@@ -833,6 +835,48 @@ function verCadastroUsuario(id){
     "Endereço: "+c.logradouro+", "+c.numero+(c.complemento?" – "+c.complemento:"")+" – "+c.bairro+" – "+c.cidade+"/"+c.uf+" – CEP "+c.cep,
     "Atualizado em: "+(u.cadastroEm?String(u.cadastroEm).slice(0,10).split("-").reverse().join("/"):"")];
   alert(L.filter(Boolean).join("\n"));
+}
+/* ---- "Esqueci minha senha": código por e-mail e senha nova ---- */
+var esqueciEtapa=0, esqueciEmail="";
+function abrirEsqueci(){ var e=document.getElementById("loginEmail"); esqueciEmail=((e&&e.value)||emailLembrado()||"").trim().toLowerCase(); esqueciEtapa=1; render(); }
+function voltarLogin(){ esqueciEtapa=0; render(); }
+function esqueciHtml(){
+  var topo='<div class="login"><div style="text-align:center;margin-bottom:12px">'+logoHtml(56)+'</div><h2 style="text-align:center;color:var(--brand-dark)">Esqueci minha senha</h2>';
+  if(esqueciEtapa===1) return topo+
+    '<p class="muted small" style="text-align:center">Digite o e-mail cadastrado. Enviaremos um código de 6 dígitos para você criar uma senha nova.</p>'+
+    '<label class="f">E-mail cadastrado</label><input type="email" id="esqEmail" autocomplete="username" value="'+esc(esqueciEmail)+'" placeholder="seu@email.com" onkeydown="if(event.key===\'Enter\')enviarCodigoEsqueci()">'+
+    '<div style="height:12px"></div><button class="btn" id="btnEsq" style="width:100%" onclick="enviarCodigoEsqueci()">Enviar código</button>'+
+    '<button class="btn sec" style="width:100%;margin-top:8px" onclick="voltarLogin()">Voltar ao login</button></div>';
+  return topo+
+    '<p class="muted small" style="text-align:center">Se o e-mail <b>'+esc(esqueciEmail)+'</b> estiver cadastrado, o código chegou nele (confira também a caixa de spam). Vale por 10 minutos.</p>'+
+    '<label class="f">Código (6 dígitos)</label><input type="text" id="esqCodigo" inputmode="numeric" maxlength="6" placeholder="000000">'+
+    '<label class="f" style="margin-top:8px">Nova senha (4 a 20 caracteres, sem espaços)</label><input type="password" id="esqNova1" autocomplete="new-password" placeholder="••••">'+
+    '<label class="f" style="margin-top:8px">Repita a nova senha</label><input type="password" id="esqNova2" autocomplete="new-password" placeholder="••••" onkeydown="if(event.key===\'Enter\')salvarSenhaEsqueci()">'+
+    '<div style="height:12px"></div><button class="btn" id="btnEsq2" style="width:100%" onclick="salvarSenhaEsqueci()">Salvar nova senha</button>'+
+    '<button class="btn sec" style="width:100%;margin-top:8px" onclick="esqueciEtapa=1;render()">Reenviar código / trocar e-mail</button>'+
+    '<button class="btn sec" style="width:100%;margin-top:8px" onclick="voltarLogin()">Voltar ao login</button></div>';
+}
+function enviarCodigoEsqueci(){
+  var em=svv("esqEmail").toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){ alert("Informe o e-mail cadastrado."); return; }
+  var b=document.getElementById("btnEsq"); if(b){ if(b.disabled) return; b.disabled=true; b.textContent="Enviando…"; }
+  apiPost("esqueciSenha",{email:em}).then(function(r){
+    if(!r||r.erro){ alert((r&&r.erro)||"Não consegui enviar agora. Tente de novo."); if(b){ b.disabled=false; b.textContent="Enviar código"; } return; }
+    esqueciEmail=em; esqueciEtapa=2; render();
+  });
+}
+function salvarSenhaEsqueci(){
+  var cod=svv("esqCodigo"), a=svv("esqNova1"), b2=svv("esqNova2");
+  if(!/^\d{6}$/.test(cod)){ alert("Digite o código de 6 dígitos que chegou no e-mail."); return; }
+  if(!/^\S{4,20}$/.test(a)){ alert("A senha deve ter de 4 a 20 caracteres, sem espaços."); return; }
+  if(a!==b2){ alert("As duas senhas não conferem."); return; }
+  var b=document.getElementById("btnEsq2"); if(b){ if(b.disabled) return; b.disabled=true; b.textContent="Salvando…"; }
+  apiPost("redefinirSenha",{email:esqueciEmail, code:cod, nova:a}).then(function(r){
+    if(!r||r.erro){ alert((r&&r.erro)||"Não consegui salvar. Tente de novo."); if(b){ b.disabled=false; b.textContent="Salvar nova senha"; } return; }
+    try{ localStorage.setItem("agt_email", esqueciEmail); }catch(e){}
+    alert("Senha alterada! Entre com o seu e-mail e a senha nova."); esqueciEtapa=0; render();
+    var s=document.getElementById("loginPin"); if(s) s.focus();
+  });
 }
 function emailLembrado(){ try{ return localStorage.getItem('agt_email')||''; }catch(e){ return ''; } }
 function entrar(){
