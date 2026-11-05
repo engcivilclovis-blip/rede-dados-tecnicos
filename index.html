@@ -669,8 +669,10 @@ function loginHtml(){
   return '<div class="login"><div style="text-align:center;margin-bottom:20px">'+head+
     '<div style="margin-top:12px;font-weight:900;font-size:clamp(17px,4.6vw,23px);line-height:1.15;color:var(--brand-dark);letter-spacing:.2px;text-wrap:balance;max-width:300px;margin-left:auto;margin-right:auto">'+esc(cfg.brand||'Sistema')+'</div>'+
     '<div class="muted small" style="margin-top:6px">'+esc(cfg.tagline||'')+'</div></div>'+
-    '<label class="f">PIN de acesso</label>'+
-    '<input type="password" id="loginPin" placeholder="••••" inputmode="numeric" onkeydown="if(event.key===\'Enter\')entrar()">'+
+    '<label class="f">E-mail cadastrado</label>'+
+    '<input type="email" id="loginEmail" autocomplete="username" placeholder="seu@email.com" value="'+esc(emailLembrado())+'" onkeydown="if(event.key===\'Enter\'){var s=document.getElementById(\'loginPin\');if(s)s.focus();}">'+
+    '<label class="f" style="margin-top:10px">Senha</label>'+
+    '<input type="password" id="loginPin" autocomplete="current-password" placeholder="••••" onkeydown="if(event.key===\'Enter\')entrar()">'+
     '<div style="height:14px"></div><button class="btn" id="btnEntrar" style="width:100%" onclick="entrar()">Entrar</button>'+
     '<p class="muted small" style="text-align:center;margin-top:16px;opacity:.8">Acesso restrito · gestão rural integrada</p></div>';
 }
@@ -698,8 +700,10 @@ function conviteHtml(){
   }
   return '<div class="login"><div style="text-align:center;margin-bottom:16px">'+head+
     '<div style="margin-top:10px;font-weight:900;font-size:clamp(16px,4.4vw,22px);line-height:1.15;color:var(--brand-dark);text-wrap:balance;max-width:300px;margin:8px auto 0">'+esc(cfg.brand||'Sistema')+'</div></div>'+corpo+
-    '<p class="muted small" style="text-align:center;margin-top:16px;opacity:.8">Bem-vindo, produtor 🌱</p></div>';
+    '<p class="muted small" style="text-align:center;margin-top:16px;opacity:.8">Bem-vindo, produtor 🌱</p>'+
+    '<p class="small" style="text-align:center;margin-top:6px"><a href="#" onclick="sairConvite();return false">Entrar com e-mail e senha</a></p></div>';
 }
+function sairConvite(){ try{ localStorage.removeItem('agt_convite'); }catch(e){} conviteToken=null; conviteNome=''; convitePrecisaSenha=false; try{ history.replaceState(null,'',location.pathname); }catch(e){} render(); }
 function _entrouConvite(r){
   try{ if(conviteToken) localStorage.setItem('agt_convite', conviteToken); }catch(e){}  // p/ reentrar pela senha (PIN) após expirar
   user=r.user; TOKEN=r.token; conviteToken=null; convitePrecisaSenha=false; conviteNome=""; fluxoLogin=null;
@@ -725,11 +729,15 @@ function entrarConvite(){
     _entrouConvite(r);
   });
 }
+function emailLembrado(){ try{ return localStorage.getItem('agt_email')||''; }catch(e){ return ''; } }
 function entrar(){
+  var ee=document.getElementById("loginEmail"); var email=(ee&&ee.value||"").trim().toLowerCase();
   var el=document.getElementById("loginPin"); var pin=(el&&el.value||"").trim();
-  if(!pin){ alert("Informe o PIN."); return; }
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ alert("Informe o e-mail cadastrado."); if(ee)ee.focus(); return; }
+  if(!pin){ alert("Informe a senha."); if(el)el.focus(); return; }
+  try{ localStorage.setItem('agt_email', email); }catch(e){}
   var btn=document.getElementById("btnEntrar"); if(btn){ btn.disabled=true; btn.textContent="Entrando…"; }
-  apiPost('login',{pin:pin}).then(function(r){
+  apiPost('login',{email:email, pin:pin}).then(function(r){
     if(!r||r.erro){ alert((r&&r.erro)||"Falha ao entrar."); if(btn){ btn.disabled=false; btn.textContent="Entrar"; } return; }
     user=r.user; TOKEN=r.token; salvarSessao(); edit=null; editProj=null; editAgro=null; editClass=null;
     if(user.pinVencido){ render(); return; }                  // senha vencida → tela de troca
@@ -777,13 +785,13 @@ function aceitarTermosAcao(){
 }
 var SESSAO_IDLE_MS=60*60*1000; // 1 hora de inatividade
 function hojeStr(){ return new Date().toISOString().slice(0,10); }
-function salvarSessao(){ try{ localStorage.setItem('agt_sess', JSON.stringify({token:TOKEN, user:user, loginDay:hojeStr(), lastAt:Date.now()})); }catch(e){} }
-function limparSessao(){ try{ localStorage.removeItem('agt_sess'); }catch(e){} }
+function salvarSessao(){ try{ sessionStorage.setItem('agt_sess', JSON.stringify({token:TOKEN, user:user, loginDay:hojeStr(), lastAt:Date.now()})); }catch(e){} }
+function limparSessao(){ try{ sessionStorage.removeItem('agt_sess'); }catch(e){} try{ localStorage.removeItem('agt_sess'); }catch(e){} }
 // marca atividade (renova a janela de 1h) — throttled p/ não gravar a cada clique
 var _ultAtiv=0;
 function marcarAtividade(){
   if(!user||!TOKEN) return; var ag=Date.now(); if(ag-_ultAtiv<30000) return; _ultAtiv=ag;
-  try{ var s=JSON.parse(localStorage.getItem('agt_sess')||'null'); if(s&&s.token){ s.lastAt=ag; localStorage.setItem('agt_sess', JSON.stringify(s)); } }catch(e){}
+  try{ var s=JSON.parse(sessionStorage.getItem('agt_sess')||'null'); if(s&&s.token){ s.lastAt=ag; sessionStorage.setItem('agt_sess', JSON.stringify(s)); } }catch(e){}
 }
 function sessaoValida(s){
   if(!s||!s.token||!s.user) return false;
@@ -802,21 +810,21 @@ function trocaSenhaHtml(){
   var venc=user.pinVencido;
   return '<div class="login"><div style="text-align:center;margin-bottom:16px">'+logoHtml(64)+'</div>'+
     '<h2 style="text-align:center;color:var(--brand-dark)">'+(venc?"Sua senha expirou":"Trocar senha")+'</h2>'+
-    (venc?'<p class="muted small" style="text-align:center">Por segurança, o PIN é renovado a cada 60 dias. Defina um novo PIN para continuar.</p>':'')+
-    '<label class="f">Novo PIN (4 a 8 dígitos)</label><input type="password" id="np1" inputmode="numeric" placeholder="••••">'+
-    '<label class="f" style="margin-top:8px">Confirmar novo PIN</label><input type="password" id="np2" inputmode="numeric" placeholder="••••" onkeydown="if(event.key===\'Enter\')trocarPinAcao()">'+
-    '<div style="height:12px"></div><button class="btn" id="btnTrocaPin" style="width:100%" onclick="trocarPinAcao()">Salvar novo PIN</button>'+
+    (venc?'<p class="muted small" style="text-align:center">Por segurança, a senha é renovada a cada 60 dias. Defina uma nova senha para continuar.</p>':'')+
+    '<label class="f">Nova senha (4 a 20 caracteres, sem espaços)</label><input type="password" id="np1" autocomplete="new-password" placeholder="••••">'+
+    '<label class="f" style="margin-top:8px">Confirmar nova senha</label><input type="password" id="np2" autocomplete="new-password" placeholder="••••" onkeydown="if(event.key===\'Enter\')trocarPinAcao()">'+
+    '<div style="height:12px"></div><button class="btn" id="btnTrocaPin" style="width:100%" onclick="trocarPinAcao()">Salvar nova senha</button>'+
     (venc?'':'<button class="btn sec" style="width:100%;margin-top:8px" onclick="cancelarTroca()">Cancelar</button>')+'</div>';
 }
 function trocarPinAcao(){
   var a=((document.getElementById('np1')||{}).value||"").trim(), b=((document.getElementById('np2')||{}).value||"").trim();
-  if(!/^\d{4,8}$/.test(a)){ alert("O PIN deve ter de 4 a 8 dígitos."); return; }
-  if(a!==b){ alert("Os dois PINs não conferem."); return; }
+  if(!/^\S{4,20}$/.test(a)){ alert("A senha deve ter de 4 a 20 caracteres, sem espaços."); return; }
+  if(a!==b){ alert("As duas senhas não conferem."); return; }
   var btn=document.getElementById('btnTrocaPin'); if(btn){ btn.disabled=true; btn.textContent="Salvando…"; }
   apiPost('trocarPin',{novoPin:a}).then(function(r){
-    if(!r||r.erro){ alert((r&&r.erro)||"Falha ao trocar o PIN."); if(btn){ btn.disabled=false; btn.textContent="Salvar novo PIN"; } return; }
+    if(!r||r.erro){ alert((r&&r.erro)||"Falha ao trocar a senha."); if(btn){ btn.disabled=false; btn.textContent="Salvar nova senha"; } return; }
     TOKEN=r.token; user.pinVencido=false; user.pinTrocadoEm=r.pinTrocadoEm; trocaModo=false; salvarSessao();
-    alert("PIN alterado com sucesso.");
+    alert("Senha alterada com sucesso.");
     if(!view) view=navFor(user)[0];
     carregando=true; render(); carregarDados().then(function(){ carregando=false; render(); });
   });
@@ -5665,15 +5673,15 @@ function usuariosTabelaHtml(){
   var tabs='<div class="row" style="gap:6px;flex-wrap:wrap;margin:2px 0 10px">'+USER_CATS.map(function(c){ var n=c.p?usuarios.filter(function(u){return c.p.indexOf(u.papel)>-1;}).length:usuarios.length; return '<button class="btn sm '+(masterUserCat===c.k?"":"sec")+'" onclick="setUserCat(\''+c.k+'\')">'+c.l+' ('+n+')</button>';}).join("")+'</div>';
   var pf=catPapeis(masterUserCat);
   var lista=usuarios.filter(function(u){return !pf||pf.indexOf(u.papel)>-1;}).sort(function(a,b){return (a.nome||"").localeCompare(b.nome||"");});
-  var tab='<table class="users"><tr><th>Nome</th><th>Papel</th><th>Tipo (organização)</th><th>Status</th><th></th></tr>'+
-    (lista.length?lista.map(function(u){ return '<tr><td>'+esc(u.nome)+'</td><td>'+esc(PAPEIS[u.papel]?PAPEIS[u.papel].nome:u.papel)+'</td>'+
+  var tab='<table class="users"><tr><th>Nome</th><th>E-mail (login)</th><th>Papel</th><th>Tipo (organização)</th><th>Status</th><th></th></tr>'+
+    (lista.length?lista.map(function(u){ return '<tr><td>'+esc(u.nome)+'</td><td>'+(u.email?'<span class="small">'+esc(u.email)+'</span>':(u.papel==="produtor"?'<span class="muted small">convite</span>':'<span class="pill erro">sem e-mail – não entra</span>'))+'</td><td>'+esc(PAPEIS[u.papel]?PAPEIS[u.papel].nome:u.papel)+'</td>'+
       '<td>'+(isOrgPapel(u.papel)
         ? '<select onchange="setOrgTipo(\''+u.id+'\',this.value)">'+ORG_TIPOS.map(function(o){return '<option value="'+o.k+'" '+((u.tipoOrg||"")===o.k?"selected":"")+'>'+esc(o.l)+'</option>';}).join("")+'</select>'
         : '<span class="muted small">—</span>')+'</td>'+
       '<td>'+(u.ativo?'<span class="pill ok">ativo</span>':'<span class="pill erro">inativo</span>')+'</td>'+
       '<td><button class="btn sm sec" onclick="editarUsuario(\''+u.id+'\')">✏️ Editar</button>'+
         (u.papel==="master"?"":' <button class="btn sm '+(u.ativo?"sec":"")+'" onclick="toggleUser(\''+u.id+'\')">'+(u.ativo?"Desativar":"Ativar")+'</button> <button class="btn sm sec" onclick="setMasterMod(\''+u.id+'\')">Módulos</button> <button class="btn sm sec" style="color:var(--erro)" onclick="excluirUsuarioAgt(\''+u.id+'\')">🗑️ Excluir</button>')+'</td></tr>';
-    }).join(""):'<tr><td colspan="5" class="muted small">Nenhum usuário nesta categoria.</td></tr>')+'</table>';
+    }).join(""):'<tr><td colspan="6" class="muted small">Nenhum usuário nesta categoria.</td></tr>')+'</table>';
   return tabs+tab;
 }
 function setOrgTipo(id,val){ var u=usuarios.find(function(x){return x.id===id;}); if(!u)return; u.tipoOrg=val; apiSalvarDoc('usuarios',u); renderMain(); }
@@ -5701,9 +5709,9 @@ function masterHtml(){
         '<button class="btn sm '+(bl?"":"sec")+'" onclick="toggleEsc(\''+e.id+'\')">'+(bl?"Desbloquear":"Bloquear")+'</button></div>';}).join("")+'</div>'+
     '<div class="card"><h2>👥 Usuários</h2>'+usuariosTabelaHtml()+modulosEditorHtml()+'<div style="height:12px"></div><h3>Adicionar usuário</h3><div class="grid g3">'+
       '<div><label class="f">Nome</label><input type="text" id="nuNome"></div>'+
-      '<div><label class="f">PIN</label><input type="text" id="nuPin"></div>'+
+      '<div><label class="f">Senha inicial</label><input type="text" id="nuPin" placeholder="4 a 20 caracteres"></div>'+
       '<div><label class="f">Papel</label><select id="nuPapel">'+Object.keys(PAPEIS).map(function(k){return '<option value="'+k+'">'+esc(PAPEIS[k].nome)+'</option>';}).join("")+'</select></div>'+
-      '<div><label class="f">E-mail (verificação/2FA)</label><input type="text" id="nuEmail" placeholder="opcional"></div></div>'+
+      '<div><label class="f">E-mail (é o login)</label><input type="email" id="nuEmail" placeholder="obrigatório – exceto produtor por convite"></div></div>'+
       '<div style="height:10px"></div><button class="btn sm" onclick="addUser()">Adicionar</button></div>'+
     precosCardHtml()+
     trilhaCardHtml();
@@ -5727,18 +5735,29 @@ function removerInforme(id){ informes=informes.filter(function(x){return x.id!==
 function toggleEsc(id){ cfg.bloqueados=cfg.bloqueados||[]; var i=cfg.bloqueados.indexOf(id); if(i>-1)cfg.bloqueados.splice(i,1); else cfg.bloqueados.push(id); salvarCfg(); renderMain(); }
 function toggleUser(id){ var u=usuarios.find(function(x){return x.id===id;}); if(!u||u.papel==="master")return; u.ativo=!u.ativo; apiSalvarDoc('usuarios',u); renderMain(); }
 function addUser(){ var n=document.getElementById("nuNome").value.trim(), pin=document.getElementById("nuPin").value.trim(), pp=document.getElementById("nuPapel").value, em=(document.getElementById("nuEmail")||{}).value||"";
-  if(!n||!pin){ alert("Informe nome e PIN."); return; } var novo={id:uid(),nome:n,pin:pin,papel:pp,email:em.trim(),ativo:true}; usuarios.push(novo); apiSalvarDoc('usuarios',novo); masterModEdit=novo.id; renderMain(); }
+  em=em.trim().toLowerCase();
+  if(!n||!pin){ alert("Informe nome e senha inicial."); return; }
+  if(!/^\S{4,20}$/.test(pin)){ alert("A senha deve ter de 4 a 20 caracteres, sem espaços."); return; }
+  var ve=validarEmailUsuario(em, null, pp); if(ve){ alert(ve); return; }
+  var novo={id:uid(),nome:n,pin:pin,papel:pp,email:em,ativo:true}; usuarios.push(novo); apiSalvarDoc('usuarios',novo); masterModEdit=novo.id; renderMain(); }
+function validarEmailUsuario(em, id, papel){
+  if(!em) return papel==="produtor" ? "" : "Informe o e-mail: ele é o login do usuário.";
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return "E-mail inválido.";
+  var dup=usuarios.find(function(x){ return x.id!==id && String(x.email||"").trim().toLowerCase()===em; });
+  return dup ? ("Este e-mail já está cadastrado para "+(dup.nome||"outro usuário")+".") : "";
+}
 function editarUsuario(id){
   var u=usuarios.find(function(x){return x.id===id;}); if(!u)return;
   var nome=prompt("Nome do usuário:", u.nome); if(nome===null)return;
-  var pin=prompt("PIN (senha) do usuário:", u.pin); if(pin===null)return;
-  pin=(pin||"").trim(); if(!pin){ alert("O PIN não pode ficar vazio."); return; }
-  var em=prompt("E-mail do usuário (para verificação/2FA):", u.email||""); if(em===null)return;
+  var em=prompt("E-mail do usuário (é o login):", u.email||""); if(em===null)return;
+  em=(em||"").trim().toLowerCase(); var ve=validarEmailUsuario(em, u.id, u.papel); if(ve){ alert(ve); return; }
+  var pin=prompt("Senha do usuário (4 a 20 caracteres):", u.pin); if(pin===null)return;
+  pin=(pin||"").trim(); if(!/^\S{4,20}$/.test(pin)){ alert("A senha deve ter de 4 a 20 caracteres, sem espaços."); return; }
   if(["master","gestor","atendente"].indexOf(u.papel)<0){
     var pa=prompt("Mensalidade paga até (dd/mm/aaaa). Vencida = o parceiro não baixa nenhuma entrega. Vazio = sem controle:", u.pagoAte?u.pagoAte.split("-").reverse().join("/"):""); if(pa===null)return;
     pa=(pa||"").trim(); if(pa){ var mm=pa.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); if(!mm){ alert("Data inválida. Use dd/mm/aaaa."); return; }
       u.pagoAte=mm[3]+"-"+("0"+mm[2]).slice(-2)+"-"+("0"+mm[1]).slice(-2); } else { delete u.pagoAte; } }
-  u.nome=(nome.trim()||u.nome); u.pin=pin; u.email=(em||"").trim(); apiSalvarDoc('usuarios',u); renderMain(); alert("Usuário atualizado.");
+  u.nome=(nome.trim()||u.nome); u.pin=pin; u.email=em; apiSalvarDoc('usuarios',u); renderMain(); alert("Usuário atualizado.");
 }
 /* --- editor de módulos por usuário --- */
 var masterModEdit=null;
@@ -5782,7 +5801,8 @@ aplicarTituloGuia();
 try{ montarPWADinamico(); }catch(e){}
 render();
 carregarCfg().then(function(){
-  var s=null; try{ s=JSON.parse(localStorage.getItem('agt_sess')||'null'); }catch(e){}
+  try{ localStorage.removeItem('agt_sess'); }catch(e){}   // sessões antigas (compartilhadas entre guias) são descartadas
+  var s=null; try{ s=JSON.parse(sessionStorage.getItem('agt_sess')||'null'); }catch(e){}
   if(sessaoValida(s)){                          // login automático só dentro de 1h de atividade e no mesmo dia
     conviteToken=null;
     user=s.user; TOKEN=s.token; _ultAtiv=Date.now(); salvarSessao();
