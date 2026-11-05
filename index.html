@@ -328,8 +328,9 @@ try{ if('serviceWorker' in navigator){ window.addEventListener('load', function(
 function apiPost(action,extra){
   var body=Object.assign({k:API_SECRET,token:TOKEN,action:action},extra||{});
   return fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)})
-    .then(function(r){return r.json();}).catch(function(){return {erro:'falha de rede'};});
+    .then(function(r){return r.json();}).then(ganchoCadastro).catch(function(){return {erro:'falha de rede'};});
 }
+function ganchoCadastro(j){ if(j&&j.precisaCadastro&&user&&fluxoLogin!=='cadastro'&&fluxoLogin!=='otp'){ user.precisaCadastro=true; fluxoLogin='cadastro'; carregando=false; setTimeout(render,0); } return j; }
 // POST com timeout (aborta se travar) — usado no carregamento para nunca prender em "carregando…"
 function apiPostTimeout(action,extra,ms){
   var ctrl=(typeof AbortController!=="undefined")?new AbortController():null;
@@ -337,7 +338,7 @@ function apiPostTimeout(action,extra,ms){
   var body=Object.assign({k:API_SECRET,token:TOKEN,action:action},extra||{});
   return fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body),signal:ctrl?ctrl.signal:undefined})
     .then(function(r){return r.json();})
-    .then(function(j){ if(to)clearTimeout(to); return j; })
+    .then(function(j){ if(to)clearTimeout(to); return ganchoCadastro(j); })
     .catch(function(e){ if(to)clearTimeout(to); return {erro:(e&&e.name==='AbortError')?'tempo esgotado':'falha de rede'}; });
 }
 function apiListar(colecao){ return apiPost('listar',{colecao:colecao}).then(function(r){return (r&&r.dados)||[];}); }
@@ -469,6 +470,7 @@ function render(){
   if(!user && conviteToken){ app.innerHTML=conviteHtml(); app.insertAdjacentHTML('beforeend',bannerPwaHtml()); return; }
   if(!user){ app.innerHTML=loginHtml(); app.insertAdjacentHTML('beforeend',bannerPwaHtml()); return; }
   if(user.pinVencido || trocaModo){ app.innerHTML=trocaSenhaHtml(); return; }
+  if(fluxoLogin==='cadastro'){ app.innerHTML=cadastroHtml(); return; }
   if(fluxoLogin==='otp'){ app.innerHTML=otpHtml(); return; }
   if(fluxoLogin==='termos'){ app.innerHTML=termosHtml(); return; }
   app.innerHTML=topbarHtml()+'<div id="informesHolder">'+informesBannerHtml()+'</div><div class="wrap">'+sideHtml()+'<main id="main"></main></div>';
@@ -709,7 +711,7 @@ function _entrouConvite(r){
   user=r.user; TOKEN=r.token; conviteToken=null; convitePrecisaSenha=false; conviteNome=""; fluxoLogin=null;
   try{ history.replaceState(null,'',location.pathname); }catch(e){}
   salvarSessao();
-  if(!user.termosAceitos){ fluxoLogin='termos'; render(); } else entrarApp();
+  seguirLogin();
   setTimeout(function(){ try{ if(deferredPrompt||ehIOS()) instalarApp(); }catch(e){} }, 800);
 }
 function criarSenhaConvite(){
@@ -729,6 +731,109 @@ function entrarConvite(){
     _entrouConvite(r);
   });
 }
+/* ---- cadastro obrigatório (todos, exceto master) + confirmação do e-mail por código ---- */
+var cadTipo=null;
+var PAPEIS_COM_REGISTRO=["agrimensor","agronomo","juridico","contabilidade"];
+function soDig(v){ return String(v==null?"":v).replace(/\D/g,""); }
+function cpfOk(v){ var c=soDig(v); if(c.length!==11||/^(\d)\1{10}$/.test(c)) return false;
+  for(var t=9;t<11;t++){ var s=0; for(var i=0;i<t;i++) s+=Number(c[i])*(t+1-i); if(((10*s)%11)%10!==Number(c[t])) return false; } return true; }
+function cnpjOk(v){ var c=soDig(v); if(c.length!==14||/^(\d)\1{13}$/.test(c)) return false;
+  function dv(n){ var p=n===12?[5,4,3,2,9,8,7,6,5,4,3,2]:[6,5,4,3,2,9,8,7,6,5,4,3,2], s=0; for(var i=0;i<n;i++) s+=Number(c[i])*p[i]; var r=s%11; return r<2?0:11-r; }
+  return dv(12)===Number(c[12]) && dv(13)===Number(c[13]); }
+function mascCad(el,tipo){
+  var d=soDig(el.value), m={cpf:[3,3,3,2,".",".","-"], cnpj:null};
+  if(tipo==="cpf"){ d=d.slice(0,11); el.value=d.replace(/^(\d{3})(\d)/,"$1.$2").replace(/^(\d{3})\.(\d{3})(\d)/,"$1.$2.$3").replace(/\.(\d{3})(\d)/,".$1-$2"); }
+  else if(tipo==="cnpj"){ d=d.slice(0,14); el.value=d.replace(/^(\d{2})(\d)/,"$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/,"$1.$2.$3").replace(/\.(\d{3})(\d)/,".$1/$2").replace(/(\d{4})(\d)/,"$1-$2"); }
+  else if(tipo==="cep"){ d=d.slice(0,8); el.value=d.replace(/^(\d{5})(\d)/,"$1-$2"); }
+  else if(tipo==="fone"){ d=d.slice(0,11); el.value=d.length>10?d.replace(/^(\d{2})(\d{5})(\d{0,4}).*/,"($1) $2-$3"):d.replace(/^(\d{2})(\d{4})(\d{0,4}).*/,"($1) $2-$3").replace(/^(\d{2})(\d{0,4})$/,"($1) $2"); }
+}
+function buscarCep(el){
+  var d=soDig(el.value); if(d.length!==8) return;
+  fetch("https://viacep.com.br/ws/"+d+"/json/").then(function(r){return r.json();}).then(function(j){
+    if(!j||j.erro) return;
+    [["logradouro",j.logradouro],["bairro",j.bairro],["cidade",j.localidade],["uf",j.uf]].forEach(function(p){ var e=document.getElementById("cd_"+p[0]); if(e && !e.value.trim() && p[1]) e.value=p[1]; });
+    var n=document.getElementById("cd_numero"); if(n) n.focus();
+  }).catch(function(){});
+}
+function coletarCad(){
+  var o={}; ["tipo","nomeCompleto","cpf","email","telefone","registro","profissao","razaoSocial","cnpj","respNome","respCpf","respCargo","cep","logradouro","numero","complemento","bairro","cidade","uf"].forEach(function(k){ var e=document.getElementById("cd_"+k); if(e) o[k]=e.value.trim(); });
+  o.tipo=cadTipo||((user.cadastro||{}).tipo)||"PF"; var dc=document.getElementById("cd_declaracao"); o.declaracao=!!(dc&&dc.checked);
+  if(o.uf) o.uf=o.uf.toUpperCase(); if(o.email) o.email=o.email.toLowerCase();
+  return o;
+}
+function setCadTipo(t){ user.cadastro=Object.assign({},user.cadastro||{},coletarCad()); cadTipo=t; user.cadastro.tipo=t; render(); }
+function cadastroHtml(){
+  var c=user.cadastro||{}, t=cadTipo||c.tipo||"PF", prof=PAPEIS_COM_REGISTRO.indexOf(user.papel)>-1;
+  function f(id,label,val,attrs,tipo){ return '<div><label class="f">'+label+'</label><input type="'+(tipo||"text")+'" id="cd_'+id+'" value="'+esc(val||"")+'" '+(attrs||"")+'></div>'; }
+  var mk=function(t){ return 'oninput="mascCad(this,\''+t+'\')" inputmode="numeric"'; };
+  return '<div class="login" style="max-width:680px"><div style="text-align:center;margin-bottom:8px">'+logoHtml(56)+'</div>'+
+    '<h2 style="text-align:center;color:var(--brand-dark);margin-bottom:4px">Complete o seu cadastro</h2>'+
+    '<p class="muted small" style="text-align:center;margin-top:0">É obrigatório para usar o sistema. Ao salvar, enviamos um <b>código de 6 dígitos</b> para o seu e-mail.</p>'+
+    '<div class="row" style="gap:6px;justify-content:center;margin:10px 0 4px"><button class="btn sm '+(t==="PF"?"":"sec")+'" onclick="setCadTipo(\'PF\')">Pessoa física</button><button class="btn sm '+(t==="PJ"?"":"sec")+'" onclick="setCadTipo(\'PJ\')">Empresa (PJ)</button></div>'+
+    (t==="PJ"?'<h3 style="margin-bottom:4px">Empresa</h3><div class="grid g2">'+f("razaoSocial","Razão social *",c.razaoSocial)+f("cnpj","CNPJ *",c.cnpj,mk("cnpj"))+'</div>'+
+      '<h3 style="margin-bottom:4px">Responsável legal</h3><div class="grid g2">'+f("respNome","Nome completo do responsável *",c.respNome)+f("respCpf","CPF do responsável *",c.respCpf,mk("cpf"))+f("respCargo","Cargo",c.respCargo,'placeholder="sócio, administrador…"')+'</div>':"")+
+    '<h3 style="margin-bottom:4px">'+(t==="PJ"?"Usuário (quem vai acessar)":"Seus dados")+'</h3><div class="grid g2">'+
+      f("nomeCompleto","Nome completo *",c.nomeCompleto||user.nome)+f("cpf","CPF *",c.cpf,mk("cpf"))+
+      f("email","E-mail (é o seu login) *",c.email||user.email,'autocomplete="email"',"email")+f("telefone","Telefone / WhatsApp com DDD *",c.telefone,mk("fone"))+
+      f("registro","Registro profissional"+(prof?" *":"")+" (CREA/CFT/OAB/CRC)",c.registro)+f("profissao","Profissão / atividade",c.profissao)+'</div>'+
+    '<h3 style="margin-bottom:4px">Endereço</h3><div class="grid g2">'+
+      f("cep","CEP *",c.cep,'oninput="mascCad(this,\'cep\')" onblur="buscarCep(this)" inputmode="numeric"')+f("logradouro","Rua / estrada *",c.logradouro)+
+      f("numero","Número *",c.numero,'placeholder="s/n se não houver"')+f("complemento","Complemento",c.complemento)+
+      f("bairro","Bairro / localidade *",c.bairro)+f("cidade","Cidade *",c.cidade)+f("uf","UF *",c.uf,'maxlength="2" style="text-transform:uppercase"')+'</div>'+
+    '<label class="chkbox" style="margin-top:12px"><input type="checkbox" id="cd_declaracao" '+(c.declaracao?"checked":"")+'> Declaro que os dados acima são verdadeiros e autorizo o uso deles para identificação no sistema (LGPD).</label>'+
+    '<div style="height:10px"></div><button class="btn" id="btnCad" style="width:100%" onclick="salvarCadastroAcao()">Salvar e receber o código</button>'+
+    '<button class="btn sec" style="width:100%;margin-top:8px" onclick="sair()">Sair</button></div>';
+}
+function validarCadLocal(o){
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(o.email||"")) return ["email","Informe um e-mail válido."];
+  if(o.tipo==="PJ"){
+    if(!o.razaoSocial) return ["razaoSocial","Informe a razão social da empresa."];
+    if(!cnpjOk(o.cnpj)) return ["cnpj","CNPJ inválido."];
+    if((o.respNome||"").split(/\s+/).length<2) return ["respNome","Informe o nome completo do responsável legal."];
+    if(!cpfOk(o.respCpf)) return ["respCpf","CPF do responsável inválido."];
+  }
+  if((o.nomeCompleto||"").split(/\s+/).length<2) return ["nomeCompleto","Informe o nome completo (nome e sobrenome)."];
+  if(!cpfOk(o.cpf)) return ["cpf","CPF inválido. Confira os números."];
+  if(soDig(o.telefone).length<10) return ["telefone","Informe o telefone com DDD."];
+  if(PAPEIS_COM_REGISTRO.indexOf(user.papel)>-1 && !o.registro) return ["registro","Informe o registro profissional."];
+  if(soDig(o.cep).length!==8) return ["cep","CEP inválido."];
+  if(!o.logradouro) return ["logradouro","Informe a rua / estrada."];
+  if(!o.numero) return ["numero","Informe o número (ou s/n)."];
+  if(!o.bairro) return ["bairro","Informe o bairro / localidade."];
+  if(!o.cidade) return ["cidade","Informe a cidade."];
+  if(!/^[A-Z]{2}$/.test(o.uf||"")) return ["uf","UF inválida (ex.: PR)."];
+  if(!o.declaracao) return ["declaracao","Marque a declaração de veracidade dos dados."];
+  return null;
+}
+function salvarCadastroAcao(){
+  var o=coletarCad(), er=validarCadLocal(o);
+  if(er){ alert(er[1]); var e=document.getElementById("cd_"+er[0]); if(e) e.focus(); return; }
+  var b=document.getElementById("btnCad"); if(b){ if(b.disabled) return; b.disabled=true; b.textContent="Salvando…"; }
+  apiPost("salvarCadastro",{cadastro:o}).then(function(r){
+    if(!r||r.erro){ alert((r&&r.erro)||"Falha ao salvar o cadastro."); if(b){ b.disabled=false; b.textContent="Salvar e receber o código"; } return; }
+    user.cadastro=r.cadastro; user.email=r.email; user.temEmail=true; cadTipo=null;
+    try{ localStorage.setItem("agt_email", r.email); }catch(e){}
+    if(r.precisaOtp){ fluxoLogin="otp"; salvarSessao(); render(); return; }
+    user.precisaCadastro=false; seguirLogin();
+  });
+}
+// depois do login (ou da troca de senha / convite): cadastro → código por e-mail → termos → sistema
+function seguirLogin(){
+  if(user.pinVencido){ fluxoLogin=null; render(); return; }
+  if(user.precisaCadastro){ fluxoLogin="cadastro"; render(); return; }
+  if(!user.termosAceitos){ fluxoLogin="termos"; render(); return; }
+  entrarApp();
+}
+function verCadastroUsuario(id){
+  var u=usuarios.find(function(x){return x.id===id;}); if(!u) return; var c=u.cadastro;
+  if(!c){ alert((u.nome||"Usuário")+": cadastro ainda não preenchido."); return; }
+  var L=[(c.tipo==="PJ"?"EMPRESA: "+c.razaoSocial+" – CNPJ "+c.cnpj+"\nResponsável legal: "+c.respNome+" – CPF "+c.respCpf+(c.respCargo?" ("+c.respCargo+")":"")+"\n":""),
+    "Nome: "+c.nomeCompleto, "CPF: "+c.cpf, "E-mail: "+(u.email||"")+(u.emailVerificado&&u.emailVerificado===String(u.email||"").toLowerCase()?" (confirmado)":" (NÃO confirmado)"),
+    "Telefone: "+c.telefone, (c.registro?"Registro: "+c.registro:""), (c.profissao?"Atividade: "+c.profissao:""),
+    "Endereço: "+c.logradouro+", "+c.numero+(c.complemento?" – "+c.complemento:"")+" – "+c.bairro+" – "+c.cidade+"/"+c.uf+" – CEP "+c.cep,
+    "Atualizado em: "+(u.cadastroEm?String(u.cadastroEm).slice(0,10).split("-").reverse().join("/"):"")];
+  alert(L.filter(Boolean).join("\n"));
+}
 function emailLembrado(){ try{ return localStorage.getItem('agt_email')||''; }catch(e){ return ''; } }
 function entrar(){
   var ee=document.getElementById("loginEmail"); var email=(ee&&ee.value||"").trim().toLowerCase();
@@ -740,20 +845,18 @@ function entrar(){
   apiPost('login',{email:email, pin:pin}).then(function(r){
     if(!r||r.erro){ alert((r&&r.erro)||"Falha ao entrar."); if(btn){ btn.disabled=false; btn.textContent="Entrar"; } return; }
     user=r.user; TOKEN=r.token; salvarSessao(); edit=null; editProj=null; editAgro=null; editClass=null;
-    if(user.pinVencido){ render(); return; }                  // senha vencida → tela de troca
-    if(user.primeiroAcesso && user.temEmail){ apiPost('enviarOtp',{}); fluxoLogin='otp'; render(); return; }
-    if(!user.termosAceitos){ fluxoLogin='termos'; render(); return; }
-    entrarApp();
+    seguirLogin();                                            // senha vencida → troca; cadastro → código; termos → sistema
   });
 }
 function entrarApp(){ fluxoLogin=null; salvarSessao(); view=navFor(user)[0]; carregando=true; render(); carregarDados().then(function(){ carregando=false; render(); }); }
 function otpHtml(){
   return '<div class="login"><div style="text-align:center;margin-bottom:16px">'+logoHtml(64)+'</div>'+
     '<h2 style="text-align:center;color:var(--brand-dark)">Verificação de identidade</h2>'+
-    '<p class="muted small" style="text-align:center">Enviamos um código de 6 dígitos para o seu e-mail cadastrado.</p>'+
+    '<p class="muted small" style="text-align:center">Enviamos um código de 6 dígitos para <b>'+esc(user.email||'o seu e-mail cadastrado')+'</b>. Confira também a caixa de spam.</p>'+
     '<label class="f">Código (6 dígitos)</label><input type="text" id="otpCode" inputmode="numeric" maxlength="6" placeholder="000000" onkeydown="if(event.key===\'Enter\')validarOtpAcao()">'+
     '<div style="height:10px"></div><button class="btn" style="width:100%" id="btnOtp" onclick="validarOtpAcao()">Validar e continuar</button>'+
-    '<button class="btn sec" style="width:100%;margin-top:8px" onclick="apiPost(\'enviarOtp\',{}).then(function(){alert(\'Novo código enviado ao seu e-mail.\');})">Reenviar código</button>'+
+    '<button class="btn sec" style="width:100%;margin-top:8px" onclick="apiPost(\'enviarOtp\',{}).then(function(r){alert(r&&r.erro?r.erro:\'Novo código enviado ao seu e-mail.\');})">Reenviar código</button>'+
+    (user.precisaCadastro?'<button class="btn sec" style="width:100%;margin-top:8px" onclick="fluxoLogin=\'cadastro\';render()">Corrigir o e-mail / cadastro</button>':'')+
     '<button class="btn sec" style="width:100%;margin-top:8px" onclick="sair()">Cancelar</button></div>';
 }
 function validarOtpAcao(){
@@ -761,7 +864,7 @@ function validarOtpAcao(){
   var b=document.getElementById('btnOtp'); if(b){b.disabled=true;b.textContent='Validando…';}
   apiPost('validarOtp',{code:c}).then(function(r){
     if(!r||r.erro){ alert((r&&r.erro)||'Falha.'); if(b){b.disabled=false;b.textContent='Validar e continuar';} return; }
-    user.primeiroAcesso=false;
+    user.primeiroAcesso=false; user.precisaCadastro=false; user.emailVerificado=user.email;
     if(!user.termosAceitos){ fluxoLogin='termos'; render(); } else entrarApp();
   });
 }
@@ -825,6 +928,7 @@ function trocarPinAcao(){
     if(!r||r.erro){ alert((r&&r.erro)||"Falha ao trocar a senha."); if(btn){ btn.disabled=false; btn.textContent="Salvar nova senha"; } return; }
     TOKEN=r.token; user.pinVencido=false; user.pinTrocadoEm=r.pinTrocadoEm; trocaModo=false; salvarSessao();
     alert("Senha alterada com sucesso.");
+    if(user.precisaCadastro){ fluxoLogin='cadastro'; render(); return; }
     if(!view) view=navFor(user)[0];
     carregando=true; render(); carregarDados().then(function(){ carregando=false; render(); });
   });
@@ -5674,12 +5778,12 @@ function usuariosTabelaHtml(){
   var pf=catPapeis(masterUserCat);
   var lista=usuarios.filter(function(u){return !pf||pf.indexOf(u.papel)>-1;}).sort(function(a,b){return (a.nome||"").localeCompare(b.nome||"");});
   var tab='<table class="users"><tr><th>Nome</th><th>E-mail (login)</th><th>Papel</th><th>Tipo (organização)</th><th>Status</th><th></th></tr>'+
-    (lista.length?lista.map(function(u){ return '<tr><td>'+esc(u.nome)+'</td><td>'+(u.email?'<span class="small">'+esc(u.email)+'</span>':(u.papel==="produtor"?'<span class="muted small">convite</span>':'<span class="pill erro">sem e-mail – não entra</span>'))+'</td><td>'+esc(PAPEIS[u.papel]?PAPEIS[u.papel].nome:u.papel)+'</td>'+
+    (lista.length?lista.map(function(u){ return '<tr><td>'+esc(u.nome)+'</td><td>'+(u.email?'<span class="small">'+esc(u.email)+'</span>'+(u.papel==="master"?'':(u.emailVerificado&&u.emailVerificado===String(u.email).toLowerCase()&&u.cadastro?' <span class="pill ok">cadastro ok</span>':' <span class="pill">cadastro pendente</span>')):(u.papel==="produtor"?'<span class="muted small">convite</span>':'<span class="pill erro">sem e-mail – não entra</span>'))+'</td><td>'+esc(PAPEIS[u.papel]?PAPEIS[u.papel].nome:u.papel)+'</td>'+
       '<td>'+(isOrgPapel(u.papel)
         ? '<select onchange="setOrgTipo(\''+u.id+'\',this.value)">'+ORG_TIPOS.map(function(o){return '<option value="'+o.k+'" '+((u.tipoOrg||"")===o.k?"selected":"")+'>'+esc(o.l)+'</option>';}).join("")+'</select>'
         : '<span class="muted small">—</span>')+'</td>'+
       '<td>'+(u.ativo?'<span class="pill ok">ativo</span>':'<span class="pill erro">inativo</span>')+'</td>'+
-      '<td><button class="btn sm sec" onclick="editarUsuario(\''+u.id+'\')">✏️ Editar</button>'+
+      '<td><button class="btn sm sec" onclick="editarUsuario(\''+u.id+'\')">✏️ Editar</button>'+(u.papel==="master"?'':' <button class="btn sm sec" onclick="verCadastroUsuario(\''+u.id+'\')">📇 Cadastro</button>')+
         (u.papel==="master"?"":' <button class="btn sm '+(u.ativo?"sec":"")+'" onclick="toggleUser(\''+u.id+'\')">'+(u.ativo?"Desativar":"Ativar")+'</button> <button class="btn sm sec" onclick="setMasterMod(\''+u.id+'\')">Módulos</button> <button class="btn sm sec" style="color:var(--erro)" onclick="excluirUsuarioAgt(\''+u.id+'\')">🗑️ Excluir</button>')+'</td></tr>';
     }).join(""):'<tr><td colspan="6" class="muted small">Nenhum usuário nesta categoria.</td></tr>')+'</table>';
   return tabs+tab;
@@ -5807,6 +5911,7 @@ carregarCfg().then(function(){
     conviteToken=null;
     user=s.user; TOKEN=s.token; _ultAtiv=Date.now(); salvarSessao();
     if(user.pinTrocadoEm){ try{ var dias=Math.floor((Date.now()-new Date(String(user.pinTrocadoEm).slice(0,10)+'T00:00:00').getTime())/86400000); if(dias>=60) user.pinVencido=true; }catch(e){} }
+    if(user.precisaCadastro && !user.pinVencido){ fluxoLogin='cadastro'; render(); return; }
     view=navFor(user)[0]||""; carregando=true; render();
     carregarDados().then(function(){ carregando=false; render(); });
   } else {
