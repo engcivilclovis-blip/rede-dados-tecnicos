@@ -327,8 +327,12 @@ try{ window.addEventListener('beforeinstallprompt', function(e){ e.preventDefaul
 try{ if('serviceWorker' in navigator){ window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); } }catch(e){}
 function apiPost(action,extra){
   var body=Object.assign({k:API_SECRET,token:TOKEN,action:action},extra||{});
-  return fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)})
-    .then(function(r){return r.json();}).then(ganchoCadastro).catch(function(){return {erro:'falha de rede'};});
+  // nunca fica preso em "Validando…/Salvando…": sem resposta em 45 s, avisa e libera o botão
+  var ctrl=(typeof AbortController!=="undefined")?new AbortController():null;
+  var to=ctrl?setTimeout(function(){ try{ctrl.abort();}catch(e){} }, 45000):null;
+  return fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body),signal:ctrl?ctrl.signal:undefined})
+    .then(function(r){return r.json();}).then(function(j){ if(to)clearTimeout(to); return ganchoCadastro(j); })
+    .catch(function(err){ if(to)clearTimeout(to); return {erro:(err&&err.name==='AbortError')?'O servidor não respondeu. Confira a internet e tente de novo.':'Falha de rede. Confira a internet e tente de novo.'}; });
 }
 function ganchoCadastro(j){ if(j&&j.precisaCadastro&&user&&fluxoLogin!=='cadastro'&&fluxoLogin!=='otp'){ user.precisaCadastro=true; fluxoLogin='cadastro'; carregando=false; setTimeout(render,0); } return j; }
 // POST com timeout (aborta se travar) — usado no carregamento para nunca prender em "carregando…"
