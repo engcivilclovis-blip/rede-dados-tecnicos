@@ -400,7 +400,8 @@ function recarregarDados(){ erroCarregar=""; carregando=true; render(); carregar
 // savers por coleção (upsert de cada doc; coleções pequenas). Otimista: já atualizamos o array em memória.
 function salvarCfg(){ apiConfig('brand',cfg.brand||'Sistema'); apiConfig('tagline',cfg.tagline||''); apiConfig('bloqueados',JSON.stringify(cfg.bloqueados||[])); }
 function salvarUsers(){ usuarios.forEach(function(u){ apiSalvarDoc('usuarios',u); }); }
-function salvarDiag(){ diagnosticos.forEach(function(d){ apiSalvarDoc('diagnosticos',d); }); }
+// grava SÓ o diagnóstico alterado: regravar a lista inteira fazia voltar diagnósticos já excluídos (lista antiga na memória de outra guia)
+function salvarDiag(d){ if(d&&d.id){ apiSalvarDoc('diagnosticos',d); return; } diagnosticos.forEach(function(x){ apiSalvarDoc('diagnosticos',x); }); }
 function salvarProj(){ projetos.forEach(function(p){ apiSalvarDoc('projetos',p); }); }
 function salvarAgro(){ atendimentos.forEach(function(a){ apiSalvarDoc('atendimentos',a); }); }
 function salvarSolic(){ solicitacoes.forEach(function(s){ apiSalvarDoc('solicitacoes',s); }); }
@@ -997,10 +998,10 @@ function moverEtapa(id,etapaId){
   var d=diagnosticos.find(function(x){return x.id===id;}); if(!d)return;
   var e=ETAPAS.find(function(x){return x.id===etapaId;}); if(!e||etapaDe(d.status)===etapaId)return;
   d.status=e.st; if(etapaId==="engenheiro"&&!d.encaminhadoEm)d.encaminhadoEm=new Date().toISOString();
-  registrarMov(d,"Movido para: "+e.l); salvarDiag(); renderMain();
+  registrarMov(d,"Movido para: "+e.l); salvarDiag(d); renderMain();
 }
 function addMovimento(id){ var el=document.getElementById("movTxt"); var t=el?el.value.trim():""; if(!t)return;
-  var d=diagnosticos.find(function(x){return x.id===id;}); if(!d)return; registrarMov(d,t); salvarDiag(); render(); }
+  var d=diagnosticos.find(function(x){return x.id===id;}); if(!d)return; registrarMov(d,t); salvarDiag(d); render(); }
 function movBloco(d){
   var movs=(d.movimentos||[]).slice().reverse();
   return '<div class="card"><h2>🕒 Histórico de movimentos</h2>'+
@@ -1123,7 +1124,7 @@ function salvarDiagAcao(silencioso){
   if(divergenciaAreas(edit)&&edit.pontos.indexOf("Divergência de área")===-1)edit.pontos.push("Divergência de área");
   var i=diagnosticos.findIndex(function(x){return x.id===edit.id;});
   if(i>-1)diagnosticos[i]=edit; else diagnosticos.push(edit);
-  salvarDiag(); edit._novo=false;
+  salvarDiag(edit); edit._novo=false;
   if(!silencioso){ alert("Diagnóstico salvo."); view="diag"; render(); }
   return true;
 }
@@ -1185,7 +1186,7 @@ function acoesDiagHtml(d){
 }
 function editarDiag(id){ var d=diagnosticos.find(function(x){return x.id===id;}); if(!d)return; if(!podeEditarDiag(d)){alert("Sem permissão para editar.");return;} edit=JSON.parse(JSON.stringify(d)); edit._novo=false; view="novo"; render(); }
 function arquivarDiag(id){ var d=diagnosticos.find(function(x){return x.id===id;}); if(!d)return; if(!podeEditarDiag(d)){alert("Sem permissão.");return;} d.arquivado=!d.arquivado; registrarMov(d,d.arquivado?"Arquivado":"Desarquivado"); apiSalvarDoc('diagnosticos',d); alert(d.arquivado?"Diagnóstico arquivado.":"Diagnóstico desarquivado."); view=voltarPadrao_(); render(); }
-function excluirDiag(id){ if(!ehMaster()){alert("Só o Master pode excluir.");return;} var d=diagnosticos.find(function(x){return x.id===id;}); if(!d)return; if(!confirm('Excluir o diagnóstico de "'+(d.cliente.nome||"")+'"?\n\nEle some das listas (nada é apagado de verdade — dá pra recuperar pelo backup).')) return; apiRemover("diagnosticos",id); diagnosticos=diagnosticos.filter(function(x){return x.id!==id;}); alert("Diagnóstico excluído."); view=voltarPadrao_(); render(); }
+function excluirDiag(id){ if(!ehMaster()){alert("Só o Master pode excluir.");return;} var d=diagnosticos.find(function(x){return x.id===id;}); if(!d)return; if(!confirm('Excluir o diagnóstico de "'+(d.cliente.nome||"")+'"?\n\nEle some das listas (nada é apagado de verdade — dá pra recuperar pelo backup).')) return; apiRemover("diagnosticos",id).then(function(r){ if(!r||r.erro||r.ok===false){ alert("O servidor não confirmou a exclusão"+((r&&r.erro)?(": "+r.erro):"")+". Recarregue a página e tente de novo."); return; } diagnosticos=diagnosticos.filter(function(x){return x.id!==id;}); alert("Diagnóstico excluído."); view=voltarPadrao_(); render(); }); }
 function baixarJsonObj(obj,prefixo,nome){
   var b=new Blob([JSON.stringify(obj,null,2)],{type:"application/json"}); var a=document.createElement("a"); a.href=URL.createObjectURL(b);
   a.download=prefixo+"_"+String(nome||"imovel").replace(/[^a-z0-9]+/gi,"_")+".json"; a.click();
@@ -1199,7 +1200,7 @@ function baixarMeuBackup(){
   baixarJsonObj(dump,"backup_dados",((user&&user.nome)||"usuario")+"_"+new Date().toISOString().slice(0,10));
   alert("Backup baixado. Guarde numa pasta segura do seu PC.\n\n(Os dados também ficam salvos na nuvem/Google Drive automaticamente.)");
 }
-function marcarImportado(id){ var d=diagnosticos.find(function(x){return x.id===id;}); if(!d)return; d.importadoEm=new Date().toISOString(); if(!/conclu/i.test(d.status))d.status="Em análise técnica"; registrarMov(d,"Importado no sistema técnico"); salvarDiag(); render(); }
+function marcarImportado(id){ var d=diagnosticos.find(function(x){return x.id===id;}); if(!d)return; d.importadoEm=new Date().toISOString(); if(!/conclu/i.test(d.status))d.status="Em análise técnica"; registrarMov(d,"Importado no sistema técnico"); salvarDiag(d); render(); }
 
 /* =========================================================================
    MÓDULO AGRIMENSOR (assinante) — entrada de dados + geração server-side
