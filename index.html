@@ -549,6 +549,8 @@ function navFor(u){
   if(sel.indexOf("proj")<0 && (projetos||[]).some(function(p){return (p.parceirosAtribuidos||[]).some(function(n){return eqNome(n,u.nome);});})) sel.push("proj");
   if(sel.indexOf("parceiros")<0 && ((trabalhos||[]).some(function(t){return (t.parceirosAtribuidos||[]).some(function(n){return eqNome(n,u.nome);});}) || (projetos||[]).some(function(p){return (p.parceirosAtribuidos||[]).some(function(n){return eqNome(n,u.nome);});}))) sel.push("parceiros");
   var ORD=["crm","diag","novo","fila","proj","novoproj","agro","novoagro","solic","portal","solicitar","parceiros","novoparc","campo","rede","mercado","servicos","master"];
+  sel=sel.filter(function(m){ return !!NAVLBL[m]; });   // módulo marcado que não é item de menu (ex.: "novo…" de apoio) não entra na barra lateral
+  if(!sel.length) sel=modulosDoPapel(u.papel).filter(function(m){ return !!NAVLBL[m]; });
   sel.sort(function(a,b){ var ia=ORD.indexOf(a),ib=ORD.indexOf(b); return (ia<0?99:ia)-(ib<0?99:ib); });
   return sel;
 }
@@ -568,7 +570,7 @@ function sideHtml(){
   var ids=navFor(user);
   if(!view||ids.indexOf(view)===-1){} // view set on login
   return '<nav class="side">'+ids.map(function(id){
-    return '<button class="'+(view===id?"on":"")+'" onclick="irView(\''+id+'\')"><span>'+NAVLBL[id].i+'</span>'+NAVLBL[id].l+'</button>';
+    return '<button class="'+(view===id?"on":"")+'" onclick="irView(\''+id+'\')"><span>'+((NAVLBL[id]||{}).i||"•")+'</span>'+((NAVLBL[id]||{}).l||id)+'</button>';
   }).join("")+'</nav>';
 }
 function bannerModulo(t,s,g){
