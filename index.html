@@ -894,11 +894,30 @@ function entrar(){
   try{ localStorage.setItem('agt_email', email); }catch(e){}
   var btn=document.getElementById("btnEntrar"); if(btn){ btn.disabled=true; btn.textContent="Entrando…"; }
   apiPost('login',{email:email, pin:pin}).then(function(r){
-    if(!r||r.erro){ alert((r&&r.erro)||"Falha ao entrar."); if(btn){ btn.disabled=false; btn.textContent="Entrar"; } return; }
-    user=r.user; TOKEN=r.token; salvarSessao(); edit=null; editProj=null; editAgro=null; editClass=null;
-    seguirLogin();                                            // senha vencida → troca; cadastro → código; termos → sistema
+    if(!r||r.erro){ if(btn){ btn.disabled=false; btn.textContent="Entrar"; } avisoLogin((r&&r.erro)||"Falha ao entrar."); return; }
+    try{
+      user=r.user; TOKEN=r.token; salvarSessao(); edit=null; editProj=null; editAgro=null; editClass=null;
+      seguirLogin();                                          // senha vencida → troca; cadastro → código; termos → sistema
+    }catch(e){ erroNaTela("ao abrir o sistema depois do login", e); var b2=document.getElementById("btnEntrar"); if(b2){ b2.disabled=false; b2.textContent="Entrar"; } }
   });
 }
+// a mensagem do login aparece na própria tela (não depende de janela de aviso do navegador)
+function avisoLogin(msg){
+  var b=document.getElementById("btnEntrar");
+  if(b){ var d=document.getElementById("loginMsg"); if(!d){ d=document.createElement("div"); d.id="loginMsg"; d.style.cssText="margin-top:10px;padding:9px 12px;border-radius:8px;background:#fde8e6;color:#8a1f17;font-size:14px;text-align:center"; b.parentNode.insertBefore(d,b.nextSibling); } d.textContent=msg; }
+  else alert(msg);
+}
+// qualquer erro do programa aparece numa faixa no alto da tela, com o texto para copiar (em vez de a tela simplesmente travar)
+function erroNaTela(onde, e){
+  try{
+    var t="Erro "+onde+": "+((e&&e.message)||e)+((e&&e.stack)?" | "+String(e.stack).split("\n").slice(0,3).join(" | "):"");
+    var d=document.getElementById("erroFaixa"); if(!d){ d=document.createElement("div"); d.id="erroFaixa";
+      d.style.cssText="position:fixed;left:0;right:0;top:0;z-index:99999;background:#8a1f17;color:#fff;padding:8px 12px;font:13px/1.35 system-ui,sans-serif;max-height:40vh;overflow:auto;user-select:text;cursor:text"; document.body.appendChild(d); }
+    d.textContent="⚠ "+t+"  — copie esta linha e envie ao suporte. (clique duplo para fechar)"; d.ondblclick=function(){ d.remove(); };
+  }catch(x){}
+}
+window.addEventListener("error", function(ev){ erroNaTela("no programa", (ev&&ev.error)||{message:(ev&&ev.message)+" (linha "+(ev&&ev.lineno)+")"}); });
+window.addEventListener("unhandledrejection", function(ev){ erroNaTela("no programa", (ev&&ev.reason)||"promessa rejeitada"); });
 function entrarApp(){ fluxoLogin=null; salvarSessao(); view=navFor(user)[0]; carregando=true; render(); carregarDados().then(function(){ carregando=false; render(); }); }
 function otpHtml(){
   return '<div class="login"><div style="text-align:center;margin-bottom:16px">'+logoHtml(64)+'</div>'+
