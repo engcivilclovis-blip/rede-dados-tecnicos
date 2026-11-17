@@ -389,7 +389,7 @@ function carregarComRetry_(tentativas){
     solicitacoes=d.solicitacoes||[]; classificados=d.classificados||[]; prestadores=d.prestadores||[]; trabalhos=d.trabalhos||[];
     compartilhamentos=d.compartilhamentos||[]; solicitacoesDados=d.solicitacoesdados||[]; diretorio=d.diretorio||[]; campos=d.campo||[]; avaliacoes=d.avaliacoes||[]; compromissos=d.compromissos||[]; vinculos=d.vinculos||[]; comunicados=d.comunicados||[]; mensagensCoop=d.mensagenscoop||[]; docsProd=d.docsprod||[]; servicos=d.servicos||[]; logs=d.logs||[];
     perfis={}; (d.perfis||[]).forEach(function(p){ perfis[p._chave||p.id||'']=p; });
-    informes=d.informes||[];
+    informes=d.informes||[]; propriedades=d.propriedades||[];
     if(d.usuarios) usuarios=d.usuarios;
     erroCarregar="";
   }).catch(function(e){
@@ -1736,8 +1736,10 @@ function incluirEntregaGerado(id,gid){ apiPost('incluirEntrega',{id:id,gid:gid})
 function removerGerado(id,gid){ if(!confirm("Remover este arquivo gerado?"))return; apiPost('removerGerado',{id:id,gid:gid}).then(function(r){ respGerador(r); }).catch(function(){ alert("Falha de conexão."); }); }
 /* ---- FERRAMENTAS do gerador (catálogo publicado pelo robô; liberação e cota por usuário) ---- */
 var ferrCat=null, ferrPed=null, ferrSel=null, ferrOrd=[], ferrEnviando=false, ferrGer=null, masterFerrEdit=null, ferrCatMaster=null;
-function carregarFerr(){ apiPost('ferrCatalogo',{}).then(function(r){ ferrCat=(r&&r.ok)?r.ferramentas:[]; ferrGer=(r&&r.gerador)||null; if(view==="ferramentas")render(); });
+function carregarFerr(){ apiPost('ferrCatalogo',{}).then(function(r){ ferrCat=(r&&r.ok)?r.ferramentas:[]; ferrGer=(r&&r.gerador)||null; window.__diagInfo=(r&&r.diagnostico)||window.__diagInfo; if(view==="ferramentas"||view==="portal")render(); });
   apiPost('ferrMeus',{}).then(function(r){ ferrPed=(r&&r.ok)?r.pedidos:[]; if(view==="ferramentas")render(); }); }
+// pedido em andamento: atualiza sozinho a cada 30 s (o diagnóstico leva 1 a 3 minutos)
+setInterval(function(){ if((view==="ferramentas"||view==="portal") && (ferrPed||[]).some(function(p){return p.status==="aguardando"||p.status==="gerando";})){ ferrCat=null; ferrPed=null; if(typeof recarregarDados==='function' && view==="portal") recarregarDados(); render(); } }, 30000);
 function ferrById(id){ return (ferrCat||[]).find(function(f){return f.id===id;}); }
 function abrirFerr(id){ ferrSel=id; ferrOrd=[]; render(); }
 function cotaTxt(c){ return c<0?'uso livre':(c===0?'<span style="color:var(--erro)">sem usos – peça mais ao escritório</span>':c+' uso(s) disponível(is)'); }
@@ -1792,7 +1794,7 @@ function enviarFerr(id){
   Promise.all(arqs.map(function(a){ return lerArqB64(a.file).then(function(b){ return {campo:a.campo,nome:a.file.name,base64:b}; }); })).then(function(lista){
     return apiPost('ferrPedir',{ferramenta:id,dados:dados,arquivos:lista,titulo:[dados.nome,dados.matricula?("mat. "+dados.matricula):""].filter(Boolean).join(" – ")});
   }).then(function(r){ ferrEnviando=false;
-    if(r&&r.ok){ ferrSel=null; ferrOrd=[]; ferrCat=null; ferrPed=null; if(user.ferramentas&&r.cota>=0) user.ferramentas[id]=r.cota; render(); setTimeout(function(){ if(view==="ferramentas"){ ferrCat=null; render(); } },60000); }
+    if(r&&r.ok){ ferrSel=null; ferrOrd=[]; ferrCat=null; ferrPed=null; diagPainel=false; if(id==="diagnostico"&&view==="portal") alert("Diagnóstico enviado. Leva de 1 a 3 minutos; o resultado aparece aqui e em Ferramentas → Meus pedidos."); if(user.ferramentas&&r.cota>=0) user.ferramentas[id]=r.cota; render(); setTimeout(function(){ if(view==="ferramentas"){ ferrCat=null; render(); } },60000); }
     else { render(); ferrRepor(g); alert("Não foi enviado: "+((r&&r.erro)||"sem resposta do servidor")); }
   }).catch(function(){ ferrEnviando=false; render(); alert("Falha ao ler o arquivo ou de conexão."); });
 }
@@ -1846,6 +1848,65 @@ function salvarFerrUser(id){ var u=usuarios.find(function(x){return x.id===id;})
   (ferrCatMaster||[]).forEach(function(f){ var on=document.getElementById('fe_on_'+f.id); if(!on||!on.checked)return; var l=document.getElementById('fe_l_'+f.id), n=document.getElementById('fe_n_'+f.id); fe[f.id]=(l&&l.checked)?-1:Math.max(0,parseInt((n&&n.value)||"0",10)||0); });
   var doc=JSON.parse(JSON.stringify(u)); doc.ferramentas=fe; delete doc.pin;
   apiPost('salvar',{colecao:'usuarios',doc:doc,setFerramentas:true}).then(function(r){ if(r&&r.ok){ u.ferramentas=fe; masterFerrEdit=null; renderMain(); alert("Ferramentas atualizadas para "+u.nome+"."); } else alert("Não gravou: "+((r&&r.erro)||"sem resposta")); });
+}
+/* ---- MINHA PROPRIEDADE: diagnóstico do imóvel (KML / matrícula + município / CAR) e previsão do tempo no centro do imóvel ---- */
+var propriedades=[], climaCache={}, diagPainel=false;
+function minhaProp(){ return (propriedades||[]).find(function(p){ return String(p.donoId)===String(user.id); })||null; }
+function diagFerr(){ return (ferrCat||[]).find(function(f){ return f.id==="diagnostico"; })||null; }
+function diagCardHtml(){
+  if(ferrCat===null){ carregarFerr(); return '<div class="card"><h2>🛰️ Diagnóstico do imóvel</h2><p class="muted">Carregando…</p></div>'; }
+  var f=diagFerr(), pr=minhaProp(), info=window.__diagInfo||{preco:"14,99",gratis:0};
+  var h='<div class="card" style="border-left:4px solid var(--brand)"><div class="row" style="justify-content:space-between;flex-wrap:wrap"><h2>🛰️ Diagnóstico do imóvel</h2>'+
+    (f?'<span class="small">'+(f.cota<0?'uso livre':(f.cota>0?(f.cota+' diagnóstico(s) disponível(is)'):'<span style="color:var(--erro)">sem diagnósticos disponíveis</span>'))+'</span>':'')+'</div>';
+  if(pr){
+    h+='<div class="grid g2" style="margin:6px 0"><div><div class="kv"><span>Imóvel</span><span>'+esc(pr.nome||pr.matricula||"—")+'</span></div><div class="kv"><span>Área</span><span>'+String(pr.area_ha||0).replace(".",",")+' ha</span></div>'+
+      '<div class="kv"><span>Centro</span><span>'+Number(pr.centro_lat).toFixed(5)+', '+Number(pr.centro_lon).toFixed(5)+'</span></div><div class="kv"><span>Origem</span><span class="small">'+esc(pr.origem||"")+'</span></div>'+
+      '<div class="kv"><span>Resultado</span><span>'+(pr.impeditivos?'<span class="pill erro">'+pr.impeditivos+' impeditivo(s)</span> ':'<span class="pill ok">sem impeditivo</span> ')+(pr.atencao?'<span class="pill warn">'+pr.atencao+' atenção</span>':'')+'</span></div>'+
+      '<div class="muted small">Diagnóstico de '+brDH(pr.diagnosticoEm)+(pr.diagnosticoGratis?' · teste grátis':'')+'</div></div><div>'+poligonoSvg(pr.poligono)+'</div></div>'+
+      '<div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn sm sec" onclick="irView(\'ferramentas\')">📋 Ver relatório e lista completa</button><button class="btn sm" onclick="pedirDiagCompleto()">📨 Solicitar diagnóstico completo ao escritório</button>'+
+      (f&&f.cota!==0?'<button class="btn sm sec" onclick="diagPainel=!diagPainel;ferrSel=\'diagnostico\';render()">'+(diagPainel?'Fechar':'↻ Novo diagnóstico')+'</button>':'')+'</div>';
+  } else h+='<p class="small">Envie o <b>KML, shapefile ou GeoJSON</b> do imóvel — ou só a <b>matrícula e o município</b> (o sistema procura no SIGEF), ou o <b>recibo do CAR</b>. Você recebe o relatório com SIGEF, CAR, embargos, áreas protegidas, APP, rodovias e mais, e a previsão do tempo passa a ser no centro do seu imóvel.</p>';
+  if(f && f.cota!==0 && (!pr || diagPainel)){ ferrSel="diagnostico"; h+=ferrFormHtml(f).replace('<div class="card">','<div style="margin-top:8px">'); }
+  else if(!f || f.cota===0) h+='<div class="row" style="gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px"><b>Diagnóstico inicial: R$ '+esc(info.preco)+'</b><button class="btn sm" onclick="pedirDiagPago()">💳 Solicitar diagnóstico</button><span class="muted small">O escritório envia o Pix e libera o diagnóstico assim que o pagamento for confirmado.</span></div>';
+  return h+'</div>';
+}
+function poligonoSvg(pol){ pol=pol||[]; if(pol.length<3) return '';
+  var xs=pol.map(function(p){return p[0];}), ys=pol.map(function(p){return p[1];}), x0=Math.min.apply(null,xs), x1=Math.max.apply(null,xs), y0=Math.min.apply(null,ys), y1=Math.max.apply(null,ys);
+  var k=Math.cos((y0+y1)/2*Math.PI/180), w=(x1-x0)*k||1e-6, hh=(y1-y0)||1e-6, esc_=180/Math.max(w,hh);
+  var pts=pol.map(function(p){ return ((p[0]-x0)*k*esc_+10).toFixed(1)+','+((y1-p[1])*esc_+10).toFixed(1); }).join(' ');
+  return '<svg viewBox="0 0 200 200" style="width:100%;max-width:220px;height:auto;background:#f3f7f4;border-radius:10px"><polygon points="'+pts+'" fill="rgba(45,106,79,.25)" stroke="#2D6A4F" stroke-width="2"/></svg>'; }
+function pedirDiagPago(){ var info=window.__diagInfo||{preco:"14,99"};
+  if(!confirm("Solicitar o diagnóstico inicial do imóvel (R$ "+info.preco+")? O escritório envia a cobrança (Pix) e libera o diagnóstico aqui na sua conta."))return;
+  solicitacoes.push({id:uid(),criadoEm:new Date().toISOString(),produtor:user.nome,tipo:"Pagamento",item:"Diagnóstico inicial do imóvel",valor:"R$ "+info.preco,status:"Nova",obs:"Liberar 1 diagnóstico (Master → Usuários → 🧰 Ferramentas) após confirmar o pagamento."});
+  salvarSolic(); alert("Pedido enviado ao escritório. Você recebe a cobrança e, confirmado o pagamento, o diagnóstico é liberado aqui."); render(); }
+function pedirDiagCompleto(){ var pr=minhaProp(); if(!pr)return;
+  solicitacoes.push({id:uid(),criadoEm:new Date().toISOString(),produtor:user.nome,tipo:"Serviço",item:"Diagnóstico completo do imóvel"+(pr.matricula?" – mat. "+pr.matricula:""),valor:"",status:"Nova",
+    obs:"Imóvel: "+(pr.nome||"")+" · "+(pr.municipioUf||"")+" · área "+pr.area_ha+" ha · centro "+pr.centro_lat+", "+pr.centro_lon+" · origem: "+(pr.origem||"")+"\nDiagnóstico automático: "+(pr.impeditivos||0)+" impeditivo(s), "+(pr.atencao||0)+" ponto(s) de atenção (pedido "+pr.diagnosticoJob+")."});
+  salvarSolic(); alert("Pedido de diagnóstico completo enviado ao escritório. Acompanhe em “Minhas solicitações”."); render(); }
+/* previsão do tempo: centro do imóvel (diagnóstico) ou a cidade; guardada por 3 h no aparelho */
+var CLIMA_TTL=3*3600*1000, CLIMA_COD={0:"céu limpo",1:"poucas nuvens",2:"parcialmente nublado",3:"nublado",45:"neblina",48:"neblina com geada",51:"garoa fraca",53:"garoa",55:"garoa forte",61:"chuva fraca",63:"chuva",65:"chuva forte",66:"chuva congelante",67:"chuva congelante",71:"neve fraca",73:"neve",75:"neve forte",77:"grãos de neve",80:"pancadas fracas",81:"pancadas de chuva",82:"pancadas fortes",85:"pancadas de neve",86:"pancadas de neve",95:"trovoadas",96:"trovoadas com granizo",99:"trovoadas com granizo"};
+function climaLer(ch){ try{ var o=JSON.parse(localStorage.getItem("clima_"+ch)||"null"); if(o&&Date.now()-o.em<CLIMA_TTL) return o; }catch(e){} return climaCache[ch]&&Date.now()-climaCache[ch].em<CLIMA_TTL?climaCache[ch]:null; }
+function climaGravar(ch,o){ climaCache[ch]=o; try{ localStorage.setItem("clima_"+ch,JSON.stringify(o)); }catch(e){} }
+function buscarClima(lat,lon,rotulo){ var ch=lat.toFixed(2)+"_"+lon.toFixed(2); if(climaLer(ch)||climaCache["_b_"+ch]) return; climaCache["_b_"+ch]=1;
+  fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&timezone=America%2FSao_Paulo&forecast_days=6")
+   .then(function(r){ return r.json(); }).then(function(j){ climaGravar(ch,{em:Date.now(),rotulo:rotulo,j:j}); if(view==="portal")render(); }).catch(function(){ delete climaCache["_b_"+ch]; }); }
+function climaCidade(cidade,cb){ var k="geo_"+cidade.toLowerCase(); try{ var o=JSON.parse(localStorage.getItem(k)||"null"); if(o) return cb(o); }catch(e){}
+  fetch("https://geocoding-api.open-meteo.com/v1/search?count=1&language=pt&countryCode=BR&name="+encodeURIComponent(cidade.split(/[\/,-]/)[0].trim())).then(function(r){return r.json();}).then(function(j){ var x=(j.results||[])[0]; if(!x)return; var o={lat:x.latitude,lon:x.longitude}; try{localStorage.setItem(k,JSON.stringify(o));}catch(e){} cb(o); }).catch(function(){}); }
+function climaCardHtml(p){
+  var pr=minhaProp(), lat=null, lon=null, rotulo="";
+  if(pr&&pr.centro_lat){ lat=Number(pr.centro_lat); lon=Number(pr.centro_lon); rotulo="no centro do seu imóvel"; }
+  else if((p.municipioUf||"").trim()){ var g=null; try{ g=JSON.parse(localStorage.getItem("geo_"+p.municipioUf.toLowerCase())||"null"); }catch(e){}
+    if(g){ lat=g.lat; lon=g.lon; rotulo="em "+p.municipioUf; } else climaCidade(p.municipioUf,function(){ if(view==="portal")render(); }); }
+  var h='<div class="card" style="margin:0"><h2>🌤️ Previsão do tempo</h2>';
+  if(lat===null) return h+'<div class="muted small">Faça o diagnóstico do imóvel (ou informe o município abaixo) para ver a previsão.</div></div>';
+  var o=climaLer(lat.toFixed(2)+"_"+lon.toFixed(2)); if(!o){ buscarClima(lat,lon,rotulo); return h+'<div class="muted small">Carregando a previsão '+esc(rotulo)+'…</div></div>'; }
+  var c=(o.j&&o.j.current)||{}, d=(o.j&&o.j.daily)||{};
+  h+='<div class="small" style="margin-bottom:6px">'+esc(rotulo)+' · atualizado '+new Date(o.em).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})+'</div>'+
+    '<div style="font-size:30px;font-weight:800">'+Math.round(c.temperature_2m)+'°C <span style="font-size:14px;font-weight:500">'+esc(CLIMA_COD[c.weather_code]||"")+'</span></div>'+
+    '<div class="small muted">Umidade '+c.relative_humidity_2m+'% · vento '+Math.round(c.wind_speed_10m)+' km/h</div><div class="row" style="gap:6px;flex-wrap:wrap;margin-top:8px">'+
+    (d.time||[]).map(function(t,i){ var dt=new Date(t+"T12:00:00"); return '<div style="flex:1;min-width:64px;text-align:center;background:#f3f7f4;border-radius:8px;padding:6px 4px"><div class="small"><b>'+dt.toLocaleDateString("pt-BR",{weekday:"short"})+'</b></div><div class="small">'+Math.round(d.temperature_2m_min[i])+'° / '+Math.round(d.temperature_2m_max[i])+'°</div><div class="small muted">'+(d.precipitation_probability_max[i]!=null?d.precipitation_probability_max[i]+'% · ':'')+(d.precipitation_sum[i]||0).toFixed(0)+' mm</div></div>'; }).join("")+
+    '</div><div class="muted" style="font-size:11px;margin-top:6px">Dados: Open-Meteo.com</div></div>';
+  return h;
 }
 var fichaServ=null;
 function abrirFicha(id){ var t=trabById(id); if(!t)return; fichaServ=id; fecharFicha(true);
@@ -5747,13 +5808,6 @@ var VIDEOS_AGRO=[
   {t:"Previsão do tempo da semana",c:"Clima no campo",u:"https://www.youtube.com/results?search_query=previs%C3%A3o+do+tempo+agro+semana"},
   {t:"Manejo e produtividade",c:"Técnico",u:"https://www.youtube.com/results?search_query=manejo+produtividade+lavoura"}
 ];
-function climaCardHtml(p){
-  var cidade=(p.municipioUf||"").trim();
-  var q=encodeURIComponent("previsão do tempo "+cidade);
-  return '<div class="card" style="margin:0"><h2>🌤️ Previsão do tempo</h2>'+
-    (cidade?('<div class="small" style="margin:4px 0 10px">Sua região: <b>'+esc(cidade)+'</b></div>'):'<div class="muted small" style="margin:4px 0 10px">Cadastre seu Município/UF abaixo para personalizar.</div>')+
-    '<a class="btn sm" href="https://www.google.com/search?q='+q+'" target="_blank">Ver previsão'+(cidade?(" de "+esc(cidade.split("/")[0])):"")+'</a></div>';
-}
 function assinaturaCardHtml(p){
   return '<div class="card" style="margin:0"><h2>💳 Assinatura</h2>'+
     (p.plano==="premium"?'<span class="pill ok">Premium ativo · R$12/mês</span>':'<span class="pill neutro">Plano grátis</span> <button class="btn sm" onclick="assinar()">Assinar Premium</button>')+
@@ -5787,6 +5841,7 @@ function portalHtml(){
     '</div></div>';
   return hero+
     bannerAnunciosHtml()+
+    diagCardHtml()+
     '<div class="grid g2">'+climaCardHtml(p)+assinaturaCardHtml(p)+'</div>'+
     produtorComunidadeHtml()+
     noticiasAgroHtml()+
