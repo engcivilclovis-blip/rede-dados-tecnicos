@@ -1,12 +1,12 @@
 {
-  "name": "Rede de Dados Tecnicos",
-  "short_name": "Rede Dados",
+  "name": "Rede de Dados Francisco Engenharia",
+  "short_name": "Rede FE",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#eef3ef",
-  "theme_color": "#2D6A4F",
+  "background_color": "#f4f5f7",
+  "theme_color": "#0f2340",
   "icons": [
     {
       "src": "icon-192.png",

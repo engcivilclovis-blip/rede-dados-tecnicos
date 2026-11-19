@@ -9,8 +9,8 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<title>Sistema de Gestão</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+<title>Rede de Dados Francisco Engenharia</title>
 <style>
   :root{
     --bg:#eef2f8; --card:#ffffff; --ink:#0f1e33; --muted:#5f6b7a;
@@ -106,6 +106,87 @@
   table.users{width:100%;border-collapse:collapse}
   table.users th{font-size:11px;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px;border-bottom:1px solid var(--line)}
   table.users td{padding:8px 6px;border-bottom:1px solid var(--line);font-size:13px}
+
+  /* ===== Identidade visual 2026-11 – sóbria, institucional, legível ===== */
+  :root{
+    --bg:#f4f5f7; --card:#ffffff; --ink:#14213d; --muted:#5b6678; --line:#e2e6ed;
+    --brand:#1f3f7a; --brand-dark:#0f2340; --brand2:#2b5296; --azul:#1f6fb2; --tan:#b8925a;
+    --sombra:0 1px 2px rgba(15,35,64,.06),0 4px 14px rgba(15,35,64,.05);
+    --serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+  }
+  body{background:var(--bg);-webkit-font-smoothing:antialiased}
+  a{color:var(--azul);text-underline-offset:2px}
+  .topbar{background:var(--brand-dark);height:58px;padding:0 22px;box-shadow:none;border-bottom:3px solid var(--tan)}
+  .topbar .logo{font-family:var(--serif);font-weight:700;letter-spacing:.2px;font-size:19px;text-transform:none;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .topbar .logo svg,.topbar .logo img{flex-shrink:0} .topbar .nm-c{display:none}
+  .topbar .who{display:flex;align-items:center;gap:9px;font-size:12.5px;opacity:1;color:#dfe6f1}
+  .topbar .avatar{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff}
+  .topbar .who small{display:block;font-size:11px;color:#9fb0c8;line-height:1.1}
+  .btn{border-radius:8px;font-weight:600;letter-spacing:.1px;transition:background .15s,border-color .15s,box-shadow .15s}
+  .btn:not(.sec):not(.ghost):not(.zap):hover{background:var(--brand2)}
+  .btn.sec{background:#fff;color:var(--brand);border:1px solid #cdd5e1}
+  .btn.sec:hover{border-color:var(--brand);background:#f7f9fc}
+  .btn.ghost{color:#dfe6f1;border:1px solid rgba(255,255,255,.22)}
+  .btn.ghost:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.45)}
+  .wrap{max-width:1160px;padding:24px 18px;gap:24px}
+  nav.side{width:214px}
+  nav.side .navtit{font-size:10.5px;letter-spacing:.9px;text-transform:uppercase;color:#8a94a6;font-weight:700;padding:4px 12px 8px}
+  nav.side button{padding:9px 12px;border-radius:7px;color:#2b3a55;font-weight:500;gap:10px;position:relative}
+  nav.side button svg{width:17px;height:17px;flex-shrink:0;stroke:#7b8799}
+  nav.side button:hover{background:#e9edf3}
+  nav.side button.on{background:#fff;color:var(--brand-dark);font-weight:700;box-shadow:var(--sombra)}
+  nav.side button.on::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:3px;background:var(--tan)}
+  nav.side button.on svg{stroke:var(--brand)}
+  .card{border-radius:10px;border-color:var(--line);box-shadow:var(--sombra);padding:18px 20px}
+  h1{font-family:var(--serif);font-weight:700;letter-spacing:.1px}
+  h2{color:var(--brand-dark);font-weight:700}
+  .modbanner{background:transparent;color:var(--ink);box-shadow:none;border-radius:0;padding:2px 0 14px;margin-bottom:18px;border-bottom:1px solid var(--line)}
+  .modbanner::after{display:none}
+  .modbanner .mtag{background:transparent;color:var(--tan);padding:0;font-size:10.5px;letter-spacing:1.2px;margin-bottom:4px;border-radius:0}
+  .modbanner .mtit{font-family:var(--serif);font-size:26px;font-weight:700;color:var(--brand-dark)}
+  .modbanner .msub{color:var(--muted);opacity:1;font-size:13.5px}
+  input[type=text],input[type=email],input[type=number],input[type=date],input[type=password],select,textarea{border-color:#cfd6e2;padding:10px 11px;transition:border-color .15s,box-shadow .15s}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand2);box-shadow:0 0 0 3px rgba(43,82,150,.14)}
+  .informe{background:#fbf7ef;color:#5c4a28;border-bottom:1px solid #eadfc9}
+  .informe-tag{background:var(--tan);color:#fff}
+  .list-item{border-radius:8px} .list-item:hover{border-color:#b9c4d6;background:#fbfcfe}
+  .rodape-app{max-width:1160px;margin:8px auto 28px;padding:16px 18px 0;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between;font-size:11.5px;color:#7b8799}
+  .rodape-app b{color:#4b5668;font-weight:600}
+  .seguro{display:inline-flex;align-items:center;gap:6px}
+  .seguro svg{width:13px;height:13px;stroke:#3d7a5a}
+  /* login em duas colunas */
+  .auth{min-height:100vh;display:grid;grid-template-columns:minmax(320px,46%) 1fr;background:var(--bg)}
+  .auth-marca{background:var(--brand-dark);color:#e8edf5;padding:48px 52px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+  .auth-marca::after{content:"";position:absolute;inset:auto -80px -120px auto;width:360px;height:360px;border-radius:50%;border:1px solid rgba(184,146,90,.25)}
+  .auth-marca .am-logo{display:flex;align-items:center;gap:12px;font-family:var(--serif);font-size:22px;font-weight:700;color:#fff}
+  .auth-marca h2{font-family:var(--serif);font-weight:600;font-size:clamp(26px,2.6vw,36px);line-height:1.18;color:#fff;margin:auto 0 14px;max-width:470px}
+  .auth-marca .am-sub{color:#b9c5d8;font-size:15px;max-width:440px;margin:0 0 30px}
+  .auth-marca ul{list-style:none;padding:0;margin:0 0 40px;display:grid;gap:14px;max-width:440px}
+  .auth-marca li{display:flex;gap:12px;align-items:flex-start;font-size:13.5px;color:#d5deeb}
+  .auth-marca li svg{width:20px;height:20px;flex-shrink:0;stroke:var(--tan);margin-top:1px}
+  .auth-marca li b{color:#fff;display:block;font-weight:600}
+  .auth-marca .am-rt{border-top:1px solid rgba(255,255,255,.12);padding-top:16px;font-size:12px;color:#9fb0c8;line-height:1.6}
+  .auth-form{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
+  .auth-form .login{margin:0;width:100%;max-width:400px;box-shadow:none;border:none;background:transparent;padding:0}
+  .auth-form h1{font-size:28px;margin:0 0 4px}
+  .auth-form .lg-sub{color:var(--muted);margin:0 0 26px}
+  .auth-form .btn{padding:12px 14px;font-size:14px}
+  .auth-form .lg-foot{margin-top:28px;font-size:12px;color:#7b8799;display:flex;gap:6px;align-items:center;justify-content:center}
+  .login{border-radius:12px;border-color:var(--line);box-shadow:0 10px 34px rgba(15,35,64,.10)}
+  @media(max-width:860px){
+    .auth{grid-template-columns:1fr}
+    .auth-marca{padding:26px 22px}
+    .auth-marca h2{margin:22px 0 8px;font-size:24px}
+    .auth-marca ul,.auth-marca .am-sub{display:none}
+    .auth-marca .am-rt{margin-top:10px}
+    .auth-form{padding:28px 20px 36px;justify-content:flex-start}
+    .topbar{padding:0 12px;gap:8px} .topbar .nm-l{display:none} .topbar .nm-c{display:inline}.topbar .who small,.topbar .who .nm{display:none}
+    nav.side{width:auto;display:flex;flex-wrap:nowrap;overflow-x:auto;gap:4px;padding-bottom:4px}
+    nav.side .navtit{display:none}
+    nav.side button{width:auto;white-space:nowrap;flex-shrink:0}
+    nav.side button.on::before{display:none}
+    .modbanner .mtit{font-size:22px}
+  }
 </style>
 
 <div id="app"></div>
@@ -217,7 +298,9 @@ var USERS_SEED = [
   {id:"u11",nome:"Parceiro Campo Demo",pin:"3030", papel:"campo",    ativo:true, fone:"49999990011"},
   {id:"u0",nome:"Você (Master)",     pin:"9999", papel:"master",     ativo:true},
 ];
-var CFG_SEED = {brand:"Sistema", tagline:"Plataforma fundiária e documental", bloqueados:[]};
+var MARCA_PADRAO = "Rede de Dados Francisco Engenharia";
+var DIREITOS = "© "+new Date().getFullYear()+" Francisco Engenharia e Imóveis Ltda – todos os direitos reservados. Reprodução ou uso comercial sem autorização é vedado (Lei 9.610/1998).";
+var CFG_SEED = {brand:MARCA_PADRAO, tagline:"Plataforma fundiária e documental", bloqueados:[]};
 
 /* ---- estado ---- */
 var user=null, view="", edit=null, verId=null, editProj=null, verProjId=null, editAgro=null;
@@ -234,8 +317,8 @@ var compromissos=[], editComprom=null, verCompromId=null, comTab="lista", comCal
 var vinculos=[], comunicados=[], mensagensCoop=[], consentOrgSel=null, docsProd=[];
 var servicos=[], editServ=null;
 var MODELOS_COBRANCA=["Valor fixo","Por hectare","Por hora","Por visita","% sobre o valor","A combinar"];
-var fluxoLogin=null, TERMOS_VERSAO="1.0", logs=[];
-var TEXTO_TERMOS="TERMOS DE USO E POLÍTICA DE PRIVACIDADE (LGPD)\n\n1. O sistema é uma plataforma de gestão fundiária e documental que conecta produtores rurais, profissionais técnicos e organizações (cooperativas, cartórios, sindicatos).\n\n2. Ao aceitar, você autoriza o tratamento dos seus dados pessoais e dos documentos que inserir, exclusivamente para as finalidades de prestação dos serviços contratados, nos termos da Lei nº 13.709/2018 (LGPD).\n\n3. Compartilhamento: seus dados só são compartilhados com terceiros mediante a sua seleção e autorização expressa dentro do sistema; você pode revogar a qualquer momento.\n\n4. Segurança: o acesso é protegido por PIN e verificação por e-mail; os acessos a documentos críticos são registrados em trilha de auditoria.\n\n5. Direitos do titular: você pode solicitar acesso, correção ou exclusão dos seus dados a qualquer momento pelo próprio sistema ou pelo suporte.\n\n6. Este é um texto padrão inicial e poderá ser atualizado; a versão vigente é registrada com data e hora do seu aceite.";
+var fluxoLogin=null, TERMOS_VERSAO="2.0", logs=[];
+var TEXTO_TERMOS="TERMOS DE USO E POLÍTICA DE PRIVACIDADE – Rede de Dados Francisco Engenharia (versão 2.0)\n\n1. QUEM SOMOS (CONTROLADOR)\nFrancisco Engenharia e Imóveis Ltda, CNPJ 47.847.344/0001-02, Praça da Bandeira, 184, sala 02, Centro, São Joaquim/SC. Encarregado pelo tratamento de dados (DPO): Clovis Francisco – e-mail eng.civil.clovis@gmail.com – telefone (49) 3191-1502.\n\n2. QUE DADOS TRATAMOS\nCadastro: nome, CPF ou CNPJ, e-mail, telefone, endereço e, para profissionais, registro profissional. Imóvel: matrícula, CAR, CCIR, coordenadas e perímetro, documentos que você enviar. Uso: registros de acesso (data, hora e ação) e o aceite destes termos.\n\n3. PARA QUE USAMOS E BASE LEGAL (LGPD, art. 7º)\nPrestar os serviços pedidos – diagnóstico do imóvel, peças técnicas, regularização e avaliação (execução de contrato, inciso V); identificar você e proteger a conta (legítimo interesse e prevenção a fraudes, inciso IX); guardar registros de acesso e documentos exigidos por lei ou por órgãos de registro (obrigação legal, inciso II); compartilhar dados com organizações que você escolher (consentimento, inciso I).\n\n4. COM QUEM COMPARTILHAMOS\nSó com: (a) organizações que você autorizar dentro do sistema (cooperativa, cartório, sindicato), podendo revogar a qualquer momento; (b) profissionais da Francisco Engenharia e responsáveis técnicos que atuam no seu serviço; (c) órgãos públicos quando a lei exigir; (d) fornecedores de infraestrutura: os dados ficam no Google (Planilhas e Drive), que pode armazená-los em servidores fora do Brasil, com cláusulas de proteção de dados do próprio fornecedor (art. 33). Não vendemos dados.\n\n5. CONSULTAS EM BASES PÚBLICAS\nPara o diagnóstico, os dados do imóvel são consultados em bases públicas oficiais (SIGEF/INCRA, SICAR, IBAMA, ICMBio, INPE, cartórios e outras). Essas consultas são registradas no relatório com a fonte e a data.\n\n6. SEGURANÇA\nConexão criptografada (HTTPS); senha guardada só de forma cifrada (nem a equipe tem acesso a ela); e-mail confirmado por código; documentos guardados de forma privada, abertos só por quem tem acesso pelo próprio sistema; registro de quem acessou documentos.\n\n7. POR QUANTO TEMPO GUARDAMOS\nCadastro: enquanto a conta estiver ativa. Registros de acesso: 12 meses (o Marco Civil da Internet exige no mínimo 6). Documentos e registros de serviços prestados: pelo prazo exigido por lei e pela responsabilidade técnica do serviço. Convites nunca usados: apagados após 90 dias.\n\n8. SEUS DIREITOS (art. 18)\nVocê pode, a qualquer momento: confirmar e acessar seus dados; corrigir o cadastro; baixar uma cópia dos seus dados (botão Backup); revogar autorizações de compartilhamento; e excluir sua conta (rodapé › Privacidade e meus dados). Ao excluir, apagamos o cadastro (nome, CPF, e-mail, telefone, endereço e senha); registros de serviços já prestados e de acesso ficam guardados só pelo prazo legal. Para outros pedidos, fale com o encarregado pelo e-mail acima; respondemos em até 15 dias.\n\n9. INCIDENTES\nSe houver incidente de segurança que possa trazer risco a você, comunicaremos você e a ANPD, como manda o art. 48 da LGPD.\n\n10. DIREITOS AUTORAIS\nO sistema, os relatórios e os documentos gerados são de titularidade da Francisco Engenharia e Imóveis Ltda (Lei 9.610/1998 e Lei 9.609/1998). Você pode usá-los para a finalidade do serviço contratado; reprodução ou uso comercial por terceiros depende de autorização.\n\n11. ALTERAÇÕES\nQuando estes termos mudarem, você verá a nova versão e precisará aceitá-la para continuar; a versão, a data e a hora do seu aceite ficam registradas.";
 function ehMobile(){ return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent); }
 function ehIOS(){ try{ return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1); }catch(e){ return false; } }
 function jaInstalado(){ try{ return window.navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches); }catch(e){ return false; } }
@@ -293,7 +376,7 @@ function _aplicarManifesto(nome, curto, icon512){
 }
 function montarPWADinamico(){
   try{
-    var nome=(cfg.brand||'Sistema');
+    var nome=(cfg.brand||MARCA_PADRAO);
     var curto=nome.length>16 ? (nome.split(/[-–—]/)[0].trim().slice(0,16) || nome.slice(0,16)) : nome;
     if(cfg.logo){ gerarIconeQuadrado(cfg.logo, 512, function(icon){ _aplicarManifesto(nome, curto, icon); }); }
     else { _aplicarManifesto(nome, curto, null); }
@@ -369,13 +452,13 @@ function apiConfig(chave,valor){ return apiPost('salvarConfig',{chave:chave,valo
 function carregarCfg(){
   // &t= quebra o cache do navegador; cache:'no-store' reforça (senão volta o logo antigo)
   return fetch(API_URL+'?action=config&k='+encodeURIComponent(API_SECRET)+'&t='+Date.now(), {cache:'no-store'}).then(function(r){return r.json();})
-    .then(function(c){ if(c&&!c.erro){ if(/agroteca/i.test(c.brand||'')) c.brand=''; cfg.brand=c.brand||'Sistema'; cfg.tagline=c.tagline||''; cfg.bloqueados=c.bloqueados||[]; if(c.logo!==undefined) cfg.logo=c.logo||''; aplicarTituloGuia(); salvarMarcaCache(); montarPWADinamico(); prepararLogoPng(); render(); } }).catch(function(){});
+    .then(function(c){ if(c&&!c.erro){ if(/agroteca/i.test(c.brand||'')||/^\s*sistema\s*$/i.test(c.brand||'')) c.brand=''; cfg.brand=c.brand||MARCA_PADRAO; cfg.tagline=c.tagline||''; cfg.bloqueados=c.bloqueados||[]; if(c.logo!==undefined) cfg.logo=c.logo||''; aplicarTituloGuia(); salvarMarcaCache(); montarPWADinamico(); prepararLogoPng(); render(); } }).catch(function(){});
 }
 // título da guia do navegador = nome da marca
-function aplicarTituloGuia(){ try{ document.title=(cfg.brand||'Sistema')+(cfg.tagline?(' — '+cfg.tagline):''); }catch(e){} }
+function aplicarTituloGuia(){ try{ document.title=(cfg.brand||MARCA_PADRAO)+(cfg.tagline?(' — '+cfg.tagline):''); }catch(e){} }
 // cache da marca (nome+slogan+logo) no aparelho — aparece na hora na próxima abertura, sem "flash" do nome
 function salvarMarcaCache(){ try{ localStorage.setItem('agt_marca', JSON.stringify({brand:cfg.brand||'', tagline:cfg.tagline||'', logo:cfg.logo||''})); }catch(e){} }
-function carregarMarcaCache(){ try{ var mc=JSON.parse(localStorage.getItem('agt_marca')||'null'); if(mc){ if(/agroteca/i.test(mc.brand||'')){ localStorage.removeItem('agt_marca'); return; } if(mc.brand)cfg.brand=mc.brand; if(mc.tagline!==undefined)cfg.tagline=mc.tagline; if(mc.logo!==undefined)cfg.logo=mc.logo; } }catch(e){} }
+function carregarMarcaCache(){ try{ var mc=JSON.parse(localStorage.getItem('agt_marca')||'null'); if(mc){ if(/agroteca|^\s*sistema\s*$/i.test(mc.brand||'')){ localStorage.removeItem('agt_marca'); return; } if(mc.brand)cfg.brand=mc.brand; if(mc.tagline!==undefined)cfg.tagline=mc.tagline; if(mc.logo!==undefined)cfg.logo=mc.logo; } }catch(e){} }
 // carrega todas as coleções após o login numa ÚNICA chamada (rápido)
 function carregarDados(){ return carregarComRetry_(3); }
 function carregarComRetry_(tentativas){
@@ -399,7 +482,7 @@ function carregarComRetry_(tentativas){
 }
 function recarregarDados(){ erroCarregar=""; carregando=true; render(); carregarDados().then(function(){ carregando=false; render(); }); }
 // savers por coleção (upsert de cada doc; coleções pequenas). Otimista: já atualizamos o array em memória.
-function salvarCfg(){ apiConfig('brand',cfg.brand||'Sistema'); apiConfig('tagline',cfg.tagline||''); apiConfig('bloqueados',JSON.stringify(cfg.bloqueados||[])); }
+function salvarCfg(){ apiConfig('brand',cfg.brand||MARCA_PADRAO); apiConfig('tagline',cfg.tagline||''); apiConfig('bloqueados',JSON.stringify(cfg.bloqueados||[])); }
 function salvarUsers(){ usuarios.forEach(function(u){ apiSalvarDoc('usuarios',u); }); }
 // grava SÓ o diagnóstico alterado: regravar a lista inteira fazia voltar diagnósticos já excluídos (lista antiga na memória de outra guia)
 function salvarDiag(d){ if(d&&d.id){ apiSalvarDoc('diagnosticos',d); return; } diagnosticos.forEach(function(x){ apiSalvarDoc('diagnosticos',x); }); }
@@ -480,7 +563,7 @@ function render(){
   if(fluxoLogin==='cadastro'){ app.innerHTML=cadastroHtml(); return; }
   if(fluxoLogin==='otp'){ app.innerHTML=otpHtml(); return; }
   if(fluxoLogin==='termos'){ app.innerHTML=termosHtml(); return; }
-  app.innerHTML=topbarHtml()+'<div id="informesHolder">'+informesBannerHtml()+'</div><div class="wrap">'+sideHtml()+'<main id="main"></main></div>';
+  app.innerHTML=topbarHtml()+'<div id="informesHolder">'+informesBannerHtml()+'</div><div class="wrap">'+sideHtml()+'<main id="main"></main></div>'+rodapeAppHtml();
   renderMain();
   iniciarInformes();
   iniciarBannerAnuncios();
@@ -504,12 +587,13 @@ function iniciarInformes(){
   },5000);
 }
 function topbarHtml(){
-  return '<div class="topbar"><span class="logo">'+(cfg.logo?'<img src="'+esc(cfg.logo)+'" style="height:30px;vertical-align:middle">':iconeTopoBranco())+' '+esc(cfg.brand||'Sistema').toUpperCase()+'</span>'+
+  var ini=String(user.nome||'?').trim().split(/\s+/).map(function(x){return x.charAt(0);}).slice(0,2).join('').toUpperCase();
+  return '<div class="topbar"><span class="logo">'+(cfg.logo?'<img src="'+esc(cfg.logo)+'" style="height:30px;vertical-align:middle">':iconeTopoBranco())+' <span class="nm-l">'+esc(cfg.brand||MARCA_PADRAO)+'</span><span class="nm-c">'+esc((cfg.brand||MARCA_PADRAO)===MARCA_PADRAO?'Rede FE':(cfg.brand||''))+'</span></span>'+
     (carregando?'<span class="who" style="opacity:.8">· carregando…</span>':'')+
     (erroCarregar?'<span class="who" style="color:#ffd7d7">· ⚠️ erro ao carregar <button class="btn ghost sm" onclick="recarregarDados()">↻ tentar de novo</button></span>':'')+
-    '<span class="sp"></span><span class="who">'+esc(user.nome)+' · '+esc(PAPEIS[user.papel].nome)+'</span>'+
-    '<button class="btn ghost sm" onclick="baixarMeuBackup()" title="Baixar uma cópia dos seus dados">💾 Backup</button>'+
-    '<button class="btn ghost sm" onclick="abrirTrocaSenha()" title="Trocar seu PIN">🔑 Senha</button>'+
+    '<span class="sp"></span><span class="who"><span class="avatar">'+esc(ini)+'</span><span class="nm">'+esc(user.nome)+'<small>'+esc(PAPEIS[user.papel].nome)+'</small></span></span>'+
+    '<button class="btn ghost sm" onclick="baixarMeuBackup()" title="Baixar uma cópia dos seus dados">Backup</button>'+
+    '<button class="btn ghost sm" onclick="abrirTrocaSenha()" title="Trocar sua senha">Senha</button>'+
     '<button class="btn ghost sm" onclick="sair()">Sair</button></div>';
 }
 // módulos que o PAPEL pode ter (teto). O Master pode restringir por usuário (u.modulos).
@@ -569,11 +653,26 @@ var NAVLBL={crm:{i:"🗂️",l:"CRM / Funil"},diag:{i:"📋",l:"Diagnósticos"},
   docsprod:{i:"📄",l:"Documentos"},
   rede:{i:"🕸️",l:"Rede de Dados"},
   mercado:{i:"🏷️",l:"Classificados"},servicos:{i:"🤝",l:"Serviços"},ferramentas:{i:"🧰",l:"Ferramentas"},master:{i:"👑",l:"Master"}};
+var ICONES_NAV={
+  crm:'<path d="M3 5h18M6 12h12M10 19h4"/>', diag:'<path d="M9 4h6l1 2h3v15H5V6h3z"/><path d="M9 12l2 2 4-4"/>', novo:'<path d="M12 5v14M5 12h14"/>',
+  fila:'<path d="M4 4h16v6H4zM4 14h16v6H4z"/>', proj:'<path d="M3 21l6-18 3 9 3-6 6 15z"/>', novoproj:'<path d="M12 5v14M5 12h14"/>',
+  agro:'<path d="M12 21V11M12 11c0-4 3-7 8-7 0 5-3 8-8 7zM12 13c0-3-2-6-7-6 0 4 3 7 7 6z"/>', novoagro:'<path d="M12 5v14M5 12h14"/>',
+  solic:'<path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/>', portal:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+  solicitar:'<path d="M5 12h14M13 6l6 6-6 6"/>', parceiros:'<circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2 20c0-3 3-5 6-5s6 2 6 5M14 20c0-2 1.5-4 4-4s4 1.5 4 4"/>',
+  novoparc:'<path d="M12 5v14M5 12h14"/>', campo:'<path d="M3 20h18M5 20V9l7-5 7 5v11"/><path d="M9 20v-5h6v5"/>',
+  vistoria:'<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>', geradordocs:'<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/>',
+  compromissos:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/>', docsprod:'<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/>',
+  rede:'<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.3 11l7.4-3.8M8.3 13l7.4 3.8"/>',
+  mercado:'<path d="M3 12l9-9h9v9l-9 9z"/><circle cx="16" cy="8" r="1.5"/>', servicos:'<path d="M14 7l3-3 3 3-3 3M17 4l-9 9M4 20l5-5"/>',
+  ferramentas:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.5-2.5z"/>',
+  master:'<path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/>'};
+function iconeNav(id){ var d=ICONES_NAV[id]||'<circle cx="12" cy="12" r="3"/>';
+  return '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+d+'</svg>'; }
 function sideHtml(){
   var ids=navFor(user);
   if(!view||ids.indexOf(view)===-1){} // view set on login
-  return '<nav class="side">'+ids.map(function(id){
-    return '<button class="'+(view===id?"on":"")+'" onclick="irView(\''+id+'\')"><span>'+((NAVLBL[id]||{}).i||"•")+'</span>'+((NAVLBL[id]||{}).l||id)+'</button>';
+  return '<nav class="side"><div class="navtit">Menu</div>'+ids.map(function(id){
+    return '<button class="'+(view===id?"on":"")+'" onclick="irView(\''+id+'\')">'+iconeNav(id)+'<span>'+esc((NAVLBL[id]||{}).l||id)+'</span></button>';
   }).join("")+'</nav>';
 }
 function bannerModulo(t,s,g){
@@ -648,6 +747,15 @@ function renderMain(){
   else if(view==="master") html=masterHtml();
   var mi=MODINFO[view];
   m.innerHTML=(mi?bannerModulo(mi.t,mi.s,mi.g):"")+html;
+  limparEmojis(m);
+}
+// visual sóbrio: tira o emoji do começo de títulos e botões (o texto continua igual)
+var RX_EMOJI_INI=/^[\s\u200d\ufe0f\u20e3]*(?:(?:\p{Extended_Pictographic}|\p{Regional_Indicator})[\u200d\ufe0f\u20e3\u{1F3FB}-\u{1F3FF}]*)+\s*/u;
+function limparEmojis(raiz){
+  try{ (raiz||document).querySelectorAll('h2,h3,.btn,button').forEach(function(el){
+    var n=el.firstChild; while(n&&n.nodeType===3&&!n.nodeValue.trim()) n=n.nextSibling;
+    if(n&&n.nodeType===3){ var v=n.nodeValue.replace(RX_EMOJI_INI,''); if(v!==n.nodeValue&&v.trim()) n.nodeValue=v; }
+  }); }catch(e){}
 }
 
 /* ---- login ---- */
@@ -681,18 +789,78 @@ function iconeMarca(px){
     '<circle cx="70" cy="50" r="15" fill="#0077B6" opacity="0.92"/>'+
     '<path d="M 55 50 L 70 65 L 90 35" stroke="#FFFFFF" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 }
+var ICO_SEGURO='<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+function fecharModalPriv(){ var m=document.getElementById('modalPriv'); if(m) m.remove(); }
+function abrirPrivacidade(soTexto){
+  fecharModalPriv();
+  var logado=!!(user&&TOKEN&&!soTexto);
+  var d=document.createElement('div'); d.id='modalPriv';
+  d.style.cssText='position:fixed;inset:0;background:rgba(15,35,64,.45);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  d.innerHTML='<div class="card" style="max-width:720px;width:100%;max-height:90vh;overflow:auto;margin:0">'+
+    '<div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Privacidade e seus dados</h2><button class="btn sec sm" onclick="fecharModalPriv()">Fechar</button></div>'+
+    '<div style="white-space:pre-wrap;font-size:12.5px;line-height:1.55;margin-top:12px;max-height:46vh;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:12px;background:#fafbfc">'+esc(TEXTO_TERMOS)+'</div>'+
+    (logado?('<div class="row" style="gap:8px;flex-wrap:wrap;margin-top:14px">'+
+      '<button class="btn sec sm" onclick="baixarMeuBackup()">Baixar uma cópia dos meus dados</button>'+
+      '<button class="btn sec sm" onclick="fecharModalPriv();fluxoLogin=\'cadastro\';render()">Corrigir meu cadastro</button>'+
+      (user.papel!=='master'?'<button class="btn sm" style="background:#a12d2d" onclick="excluirMinhaContaAcao()">Excluir minha conta</button>':'')+
+      '</div><p class="muted small" style="margin-top:8px">Dúvidas ou outros pedidos sobre seus dados: eng.civil.clovis@gmail.com (encarregado).</p>'):'')+
+    '</div>';
+  d.addEventListener('click',function(e){ if(e.target===d) fecharModalPriv(); });
+  document.body.appendChild(d);
+}
+function excluirMinhaContaAcao(){
+  if(!confirm('Excluir sua conta?\n\nSeu cadastro (nome, CPF, e-mail, telefone, endereço e senha) será apagado e você não conseguirá mais entrar. Registros de serviços já prestados ficam guardados só pelo prazo legal.\n\nEssa ação não pode ser desfeita.')) return;
+  var senha=prompt('Para confirmar, digite a sua senha:'); if(!senha) return;
+  apiPostTimeout('excluirMinhaConta',{senha:senha},25000).then(function(r){
+    if(r&&r.ok){ fecharModalPriv(); alert('Sua conta foi excluída. Obrigado por ter usado a plataforma.'); sair(); }
+    else alert((r&&r.erro)||'Não foi possível excluir agora. Tente de novo ou escreva para eng.civil.clovis@gmail.com.');
+  });
+}
+// documentos guardados de forma privada: links do Drive abrem pelo próprio sistema (só para quem tem acesso)
+function idDriveLink(h){ var m=String(h||'').match(/\/d\/([\w-]{20,})/)||String(h||'').match(/[?&]id=([\w-]{20,})/); return m?m[1]:''; }
+document.addEventListener('click',function(e){
+  var a=e.target&&e.target.closest?e.target.closest('a[href]'):null; if(!a||!TOKEN) return;
+  var h=a.getAttribute('href')||''; if(!/drive\.google\.com|docs\.google\.com/.test(h) || /\/folders\//.test(h)) return;
+  var id=idDriveLink(h); if(!id) return;
+  e.preventDefault();
+  var w=window.open('','_blank'); if(w){ try{ w.document.write('<p style="font-family:sans-serif;padding:20px">Abrindo o documento…</p>'); }catch(_){} }
+  apiPostTimeout('fileBase64',{id:id},60000).then(function(r){
+    if(!r||!r.ok){ if(w) w.close(); alert('Não foi possível abrir: '+((r&&r.erro)||'erro')); return; }
+    var bin=atob(r.base64), u8=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i);
+    var url=URL.createObjectURL(new Blob([u8],{type:r.mime||'application/octet-stream'}));
+    if(w) w.location.href=url; else window.open(url,'_blank');
+    setTimeout(function(){ URL.revokeObjectURL(url); },120000);
+  });
+},true);
+function rodapeAppHtml(){
+  return '<div class="rodape-app"><span><b>Francisco Engenharia e Imóveis Ltda</b> · CNPJ 47.847.344/0001-02 · Resp. técnico: CREA-SC 186659-5 · São Joaquim/SC</span>'+
+    '<span class="seguro">'+ICO_SEGURO+'Conexão segura · <a href="#" onclick="abrirPrivacidade();return false">Privacidade e meus dados</a></span>'+
+    '<span style="flex-basis:100%">'+esc(DIREITOS)+'</span></div>';
+}
+function _liAuth(icone,tit,txt){ return '<li><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+icone+'</svg><span><b>'+tit+'</b>'+txt+'</span></li>'; }
 function loginHtml(){
-  var head=cfg.logo?('<img src="'+esc(cfg.logo)+'" alt="logo" style="max-height:76px;max-width:230px;vertical-align:middle">'):iconeMarca(66);
-  return '<div class="login"><div style="text-align:center;margin-bottom:20px">'+head+
-    '<div style="margin-top:12px;font-weight:900;font-size:clamp(17px,4.6vw,23px);line-height:1.15;color:var(--brand-dark);letter-spacing:.2px;text-wrap:balance;max-width:300px;margin-left:auto;margin-right:auto">'+esc(cfg.brand||'Sistema')+'</div>'+
-    '<div class="muted small" style="margin-top:6px">'+esc(cfg.tagline||'')+'</div></div>'+
+  var marcaLogo=cfg.logo?('<img src="'+esc(cfg.logo)+'" alt="logo" style="max-height:44px;max-width:180px;background:#fff;border-radius:6px;padding:4px">'):iconeTopoBranco();
+  return '<div class="auth"><aside class="auth-marca"><div class="am-logo">'+marcaLogo+'<span>'+esc(cfg.brand||MARCA_PADRAO)+'</span></div>'+
+    '<h2>Documentação, diagnóstico e regularização de imóveis rurais em um só lugar.</h2>'+
+    '<p class="am-sub">'+esc(cfg.tagline||'Plataforma da Francisco Engenharia para produtores, parceiros e instituições.')+'</p>'+
+    '<ul>'+
+      _liAuth('<path d="M9 4h6l1 2h3v15H5V6h3z"/><path d="M9 12l2 2 4-4"/>','Diagnóstico nas bases oficiais','SIGEF, CAR, IBAMA, ICMBio, INPE e cartório, com fonte e data de cada consulta.')+
+      _liAuth('<path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/>','Responsabilidade técnica','Peças revisadas por engenheiro habilitado antes de serem liberadas.')+
+      _liAuth('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>','Acesso protegido','Conta pessoal com e-mail verificado; seus arquivos ficam privados.')+
+    '</ul>'+
+    '<div class="am-rt">Francisco Engenharia e Imóveis Ltda · CNPJ 47.847.344/0001-02<br>Engenharia civil e agrimensura · CREA-SC 186659-5 · São Joaquim/SC<br>© '+new Date().getFullYear()+' Francisco Engenharia e Imóveis Ltda – todos os direitos reservados</div></aside>'+
+    '<div class="auth-form">'+loginCardHtml()+'</div></div>';
+}
+function loginCardHtml(){
+  return '<div class="login"><h1>Acessar sua conta</h1><p class="lg-sub">Entre com o e-mail cadastrado e sua senha.</p>'+
     '<label class="f">E-mail cadastrado</label>'+
     '<input type="email" id="loginEmail" autocomplete="username" placeholder="seu@email.com" value="'+esc(emailLembrado())+'" onkeydown="if(event.key===\'Enter\'){var s=document.getElementById(\'loginPin\');if(s)s.focus();}">'+
     '<label class="f" style="margin-top:10px">Senha</label>'+
     '<input type="password" id="loginPin" autocomplete="current-password" placeholder="••••" onkeydown="if(event.key===\'Enter\')entrar()">'+
     '<div style="height:14px"></div><button class="btn" id="btnEntrar" style="width:100%" onclick="entrar()">Entrar</button>'+
     '<p class="small" style="text-align:center;margin:12px 0 0"><a href="#" onclick="abrirEsqueci();return false">Esqueci minha senha</a></p>'+
-    '<p class="muted small" style="text-align:center;margin-top:16px;opacity:.8">Acesso restrito · gestão rural integrada</p></div>';
+    '<div class="lg-foot" style="flex-wrap:wrap"><a href="#" onclick="abrirPrivacidade(true);return false">Termos de uso e política de privacidade</a></div>'+
+    '<div class="lg-foot" style="margin-top:8px">'+ICO_SEGURO.replace('<svg ','<svg width="13" height="13" stroke="#3d7a5a" ')+'Acesso restrito · conexão segura</div></div>';
 }
 /* ---- convite do produtor (link mágico, sem e-mail) ---- */
 function iniciarConvite(){
@@ -717,7 +885,7 @@ function conviteHtml(){
       '<div style="height:12px"></div><button class="btn" style="width:100%" onclick="entrarConvite()">Entrar</button>';
   }
   return '<div class="login"><div style="text-align:center;margin-bottom:16px">'+head+
-    '<div style="margin-top:10px;font-weight:900;font-size:clamp(16px,4.4vw,22px);line-height:1.15;color:var(--brand-dark);text-wrap:balance;max-width:300px;margin:8px auto 0">'+esc(cfg.brand||'Sistema')+'</div></div>'+corpo+
+    '<div style="margin-top:10px;font-weight:900;font-size:clamp(16px,4.4vw,22px);line-height:1.15;color:var(--brand-dark);text-wrap:balance;max-width:300px;margin:8px auto 0">'+esc(cfg.brand||MARCA_PADRAO)+'</div></div>'+corpo+
     '<p class="muted small" style="text-align:center;margin-top:16px;opacity:.8">Bem-vindo, produtor 🌱</p>'+
     '<p class="small" style="text-align:center;margin-top:6px"><a href="#" onclick="sairConvite();return false">Entrar com e-mail e senha</a></p></div>';
 }
@@ -798,7 +966,7 @@ function cadastroHtml(){
       f("bairro","Bairro / localidade *",c.bairro)+f("cidade","Cidade *",c.cidade)+f("uf","UF *",c.uf,'maxlength="2" style="text-transform:uppercase"')+'</div>'+
     '<label class="chkbox" style="margin-top:12px"><input type="checkbox" id="cd_declaracao" '+(c.declaracao?"checked":"")+'> Declaro que os dados acima são verdadeiros e autorizo o uso deles para identificação no sistema (LGPD).</label>'+
     '<div style="height:10px"></div><button class="btn" id="btnCad" style="width:100%" onclick="salvarCadastroAcao()">Salvar e receber o código</button>'+
-    '<button class="btn sec" style="width:100%;margin-top:8px" onclick="sair()">Sair</button></div>';
+    (user.precisaCadastro?'<button class="btn sec" style="width:100%;margin-top:8px" onclick="sair()">Sair</button>':'<button class="btn sec" style="width:100%;margin-top:8px" onclick="fluxoLogin=null;render()">Voltar sem alterar</button>')+'</div>';
 }
 function validarCadLocal(o){
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(o.email||"")) return ["email","Informe um e-mail válido."];
@@ -1940,7 +2108,7 @@ window.addEventListener("message",function(ev){
 function removeEntregaParc(id,i){ var t=trabById(id); if(!t)return; t.entregas.splice(i,1); salvarTrab(); render(); }
 function msgAndamento(t){
   var last=(t.movimentos&&t.movimentos.length)?t.movimentos[t.movimentos.length-1].texto:t.status;
-  var m="*"+(cfg.brand||"Sistema")+"* — Andamento do serviço\n📋 "+(t.titulo||"(serviço)")+"\n📌 Status: "+t.status+"\n";
+  var m="*"+(cfg.brand||MARCA_PADRAO)+"* — Andamento do serviço\n📋 "+(t.titulo||"(serviço)")+"\n📌 Status: "+t.status+"\n";
   if(last)m+="📝 "+last+"\n";
   if(t.entregas&&t.entregas.length){ var e=t.entregas[t.entregas.length-1]; m+=(entregaLiberada(e)?"✅ Pronto p/ baixar: "+e.nome+(e.link?(" — "+e.link):""):"✅ Pronto: "+e.nome+" (aguardando liberação)")+"\n"; }
   return m;
@@ -1955,14 +2123,14 @@ function parcExtrato(id){
   var ent=(t.entregas||[]).map(function(e){return '<li>'+esc(e.nome)+(e.link&&entregaLiberada(e)?(' — '+esc(e.link)):(entregaLiberada(e)?'':' — aguardando liberação'))+' ('+esc(brData(e.quando))+')</li>';}).join("")||'<li>—</li>';
   var w=window.open("","_blank"); if(!w){alert("Permita pop-ups para gerar o extrato.");return;}
   w.document.write('<html><head><meta charset="utf-8"><title>Extrato — '+esc(t.titulo)+'</title><style>body{font-family:Arial,sans-serif;color:#1a1a1a;padding:24px;max-width:800px;margin:auto}h1{color:#1B4332;font-size:20px}h2{font-size:15px;color:#0f2a63;border-bottom:1px solid #ccc;padding-bottom:4px;margin-top:22px}table{width:100%;border-collapse:collapse;font-size:13px}td,th{border:1px solid #ddd;padding:6px 8px;text-align:left;vertical-align:top}th{background:#f0f4f0}.kv{font-size:13px;margin:3px 0}.kv b{display:inline-block;min-width:150px;color:#555}.foot{margin-top:26px;font-size:11px;color:#888}</style></head><body>'+
-    '<h1>'+esc(cfg.brand||"Sistema")+' — Extrato de andamento</h1>'+
+    '<h1>'+esc(cfg.brand||MARCA_PADRAO)+' — Extrato de andamento</h1>'+
     '<div class="kv"><b>Serviço:</b> '+esc(t.titulo||"—")+'</div><div class="kv"><b>Tipo:</b> '+esc(parcTipoLabel(t.tipo))+'</div>'+
     '<div class="kv"><b>Parceiro:</b> '+esc(t.parceiro||"—")+'</div><div class="kv"><b>Cliente:</b> '+esc(t.cliente.nome||"—")+'</div>'+
     '<div class="kv"><b>Imóvel:</b> '+esc(t.imovel.denominacao||"—")+' · matrícula '+esc(t.imovel.matricula||"—")+' · '+esc(t.imovel.municipioUf||"—")+'</div>'+
     '<div class="kv"><b>Status atual:</b> '+esc(t.status)+'</div><div class="kv"><b>Aberto em:</b> '+esc(brDH(t.criadoEm))+'</div>'+
     '<h2>Movimentações</h2><table><tr><th>Data/hora</th><th>Por</th><th>Andamento</th></tr>'+linhas+'</table>'+
     '<h2>Trabalhos entregues</h2><ul>'+ent+'</ul>'+
-    '<div class="foot">Emitido em '+esc(new Date().toLocaleString("pt-BR"))+' · '+esc(cfg.brand||"Sistema")+'</div>'+
+    '<div class="foot">Emitido em '+esc(new Date().toLocaleString("pt-BR"))+' · '+esc(cfg.brand||MARCA_PADRAO)+'<br>'+esc(DIREITOS)+'</div>'+
     '<script>window.onload=function(){setTimeout(function(){window.print();},300);}<\/script></body></html>');
   w.document.close();
 }
@@ -2069,7 +2237,7 @@ function revogarComp(id,val){ var c=compById(id); if(!c)return; c.revogado=val; 
 function renovarComp(id){ var c=compById(id); if(!c)return; var v=prompt("Nova data de validade (AAAA-MM-DD):",c.validade||dataMais(90)); if(!v)return; c.validade=v; c.validadeTipo="temporario"; c.revogado=false; registrarMov(c,"Prazo renovado até "+v); salvarComp(); renderMain(); }
 function excluirComp(id){ if(!ehMaster())return; if(!confirm("Excluir este pacote?"))return; apiRemover('compartilhamentos',id); var i=compartilhamentos.findIndex(function(x){return x.id===id;}); if(i>-1)compartilhamentos.splice(i,1); renderMain(); }
 function avisarComp(id,nome){ var c=compById(id); if(!c)return;
-  var msg="*"+(cfg.brand||"Sistema")+"* — Dados disponíveis\n📦 "+(c.titulo||"pacote")+"\n"+(c.cliente&&c.cliente.nome?("👤 Cliente: "+c.cliente.nome+"\n"):"")+"🔐 Acesse sua conta para baixar"+(c.validadeTipo==="temporario"&&c.validade?(" (até "+brData(c.validade)+")"):"")+".";
+  var msg="*"+(cfg.brand||MARCA_PADRAO)+"* — Dados disponíveis\n📦 "+(c.titulo||"pacote")+"\n"+(c.cliente&&c.cliente.nome?("👤 Cliente: "+c.cliente.nome+"\n"):"")+"🔐 Acesse sua conta para baixar"+(c.validadeTipo==="temporario"&&c.validade?(" (até "+brData(c.validade)+")"):"")+".";
   abrirWa2(foneDir(nome),msg); }
 
 /* ===================== (2) SOLICITAÇÕES DE DADOS ===================== */
@@ -2131,7 +2299,7 @@ function responderSolD(id){ var s=solDById(id); if(!s)return;
 function recusarSolD(id){ var s=solDById(id); if(!s)return; if(!confirm("Recusar este pedido?"))return; s.status="Recusada"; registrarMov(s,"Recusada por "+user.nome); salvarSolD(); renderMain(); }
 function avisarSolD(id,quem){ var s=solDById(id); if(!s)return;
   var alvoNome = quem==="alvo"? s.alvo : s.solicitante;
-  var msg="*"+(cfg.brand||"Sistema")+"* — Solicitação de dados\n📄 "+s.tipoDado+(s.cliente&&s.cliente.nome?("\n👤 Cliente: "+s.cliente.nome):"")+"\n📌 Status: "+s.status+(s.resposta?("\n📝 "+s.resposta):"");
+  var msg="*"+(cfg.brand||MARCA_PADRAO)+"* — Solicitação de dados\n📄 "+s.tipoDado+(s.cliente&&s.cliente.nome?("\n👤 Cliente: "+s.cliente.nome):"")+"\n📌 Status: "+s.status+(s.resposta?("\n📝 "+s.resposta):"");
   abrirWa2(foneDir(alvoNome),msg);
 }
 
@@ -2294,7 +2462,7 @@ function addCustoCampo(id){ var o=campoById(id); if(!o)return; if(num(custoDraft
   salvarCampo(); render(); }
 function delCustoCampo(id,i){ var o=campoById(id); if(!o)return; o.custos.splice(i,1); salvarCampo(); render(); }
 function avisarCampo(id,quem){ var o=campoById(id); if(!o)return;
-  var msg="*"+(cfg.brand||"Sistema")+"* — Serviço de campo\n📋 "+(o.cliente.nome||o.imovel.denominacao||"ordem")+"\n📌 Status: "+o.status+(o.dataAgendada?("\n📅 "+brData(o.dataAgendada)):"")+(o.servico?("\n🛠️ "+o.servico):"");
+  var msg="*"+(cfg.brand||MARCA_PADRAO)+"* — Serviço de campo\n📋 "+(o.cliente.nome||o.imovel.denominacao||"ordem")+"\n📌 Status: "+o.status+(o.dataAgendada?("\n📅 "+brData(o.dataAgendada)):"")+(o.servico?("\n🛠️ "+o.servico):"");
   var fone = quem==="parceiro"? foneDir(o.campoParceiro) : (quem==="cliente"? (o.cliente&&o.cliente.fone) : donoFone());
   if(quem==="escritorio"&&!fone){ alert("O escritório ainda não configurou o WhatsApp (Parceiros → Meu WhatsApp).");return; }
   abrirWa2(fone,msg);
@@ -5258,7 +5426,7 @@ function cabecalhoWord(){
 function baixarDocWord(nomeArq, interno, qrText){
   var qrImg = qrText ? qrDataURL(qrText) : null;
   var verif = qrImg ? ('<table style="margin-top:16pt"><tr><td style="border:none;width:112px;vertical-align:middle;padding:0"><img src="'+qrImg+'" style="width:100px;height:100px"></td><td style="border:none;vertical-align:middle;font-size:8pt;color:#333;padding:0 0 0 8px"><b>Verificação do documento</b><br>Aponte a câmera do celular para o QR Code para conferir os dados de autenticidade (proprietário, matrícula, valor, data e responsável) deste documento emitido por '+esc(cfg.brand||'')+'.</td></tr></table>') : '';
-  var rodape='<div style="border-top:1px solid #000;margin-top:16pt;padding-top:4pt;text-align:center;font-size:8pt;color:#333">'+esc(cfg.brand||'')+(cfg.tagline?(' · '+esc(cfg.tagline)):'')+'</div>';
+  var rodape='<div style="border-top:1px solid #000;margin-top:16pt;padding-top:4pt;text-align:center;font-size:8pt;color:#333">'+esc(cfg.brand||MARCA_PADRAO)+(cfg.tagline?(' · '+esc(cfg.tagline)):'')+'<br><span style="font-size:7pt">'+esc(DIREITOS)+'</span></div>';
   var full='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>'+esc(nomeArq)+'</title>'+
     '<style>@page{size:A4;margin:2cm} body{font-family:\'Times New Roman\',serif;font-size:12pt;color:#000;line-height:1.4} h1{font-size:14pt;text-align:center;margin:0 0 12pt} h2{font-size:12pt;margin:14pt 0 4pt} p{margin:4pt 0;text-align:justify} table{border-collapse:collapse;width:100%;margin:6pt 0} td,th{border:1px solid #000;padding:4px;font-size:10pt;vertical-align:top} .sig{margin-top:48pt;text-align:center} .muted{color:#333;font-size:10pt} img{max-width:100%;height:auto}</style></head><body>'+cabecalhoWord()+interno+verif+rodape+'</body></html>';
   var blob=new Blob(['﻿'+full],{type:'application/msword'});
@@ -5463,7 +5631,7 @@ function foneComprom(c, alvo){ // alvo: 'convidado' | 'solicitante'
 }
 function avisarComprom(id){ var c=comById(id); if(!c)return;
   var alvo = eqNome(c.solicitante,user.nome) ? 'convidado' : 'solicitante';
-  var msg="*"+(cfg.brand||"Sistema")+"* — Agendamento\n📆 "+(c.titulo||"")+"\n📅 "+brData(c.data)+(c.hora?(" "+c.hora):"")+(c.local?("\n📍 "+c.local):"")+"\n📌 "+c.status;
+  var msg="*"+(cfg.brand||MARCA_PADRAO)+"* — Agendamento\n📆 "+(c.titulo||"")+"\n📅 "+brData(c.data)+(c.hora?(" "+c.hora):"")+(c.local?("\n📍 "+c.local):"")+"\n📌 "+c.status;
   abrirWa2(foneComprom(c,alvo), msg);
 }
 function gcalComprom(c){ var t=encodeURIComponent(c.titulo||"Agendamento"); var d=(c.data||"").replace(/-/g,""); var dates=d?("&dates="+d+"/"+d):""; var det=encodeURIComponent(c.descricao||""); var loc=encodeURIComponent(c.local||""); return "https://calendar.google.com/calendar/render?action=TEMPLATE&text="+t+dates+"&details="+det+"&location="+loc; }
@@ -5633,12 +5801,12 @@ function enviarComunicado(comWhats){
 function abrirWaCom(id){ comWaId=id; renderMain(); }
 function fecharWaCom(){ comWaId=null; renderMain(); }
 function waComProd(nomeEnc,comId){ var nome=decodeURIComponent(nomeEnc); var c=comunicados.find(function(x){return x.id===comId;}); if(!c)return;
-  var msg="*"+(cfg.brand||"Sistema")+"* — "+(c.titulo||"Comunicado")+"\n"+(c.texto||"")+(c.link?("\n"+c.link):""); abrirWa2(foneDir(nome), msg); }
+  var msg="*"+(cfg.brand||MARCA_PADRAO)+"* — "+(c.titulo||"Comunicado")+"\n"+(c.texto||"")+(c.link?("\n"+c.link):""); abrirWa2(foneDir(nome), msg); }
 function excluirComunicado(id){ if(!confirm('Excluir este comunicado?'))return; apiRemover('comunicados',id); var i=comunicados.findIndex(function(x){return x.id===id;}); if(i>-1)comunicados.splice(i,1); if(comWaId===id)comWaId=null; renderMain(); }
 function excluirComunicado(id){ if(!confirm('Excluir este comunicado?'))return; apiRemover('comunicados',id); var i=comunicados.findIndex(function(x){return x.id===id;}); if(i>-1)comunicados.splice(i,1); renderMain(); }
 function responderMsgCoop(id){ var mm=msgCoopById(id); if(!mm)return; var r=prompt('Resposta ao produtor:',mm.resposta||''); if(r==null)return; mm.resposta=r; salvarMensagensCoop(); renderMain(); setTimeout(function(){ if(confirm('Avisar o produtor pelo WhatsApp?')) avisarProdutorWa(id); },150); }
 function statusPedidoCoop(id,st){ var mm=msgCoopById(id); if(!mm)return; mm.status=st; salvarMensagensCoop(); renderMain(); }
-function avisarProdutorWa(id){ var mm=msgCoopById(id); if(!mm)return; var msg="*"+(cfg.brand||"Sistema")+"* — "+(mm.tipo==='pedido'?'Pedido':'Mensagem')+"\n"+(mm.tipo==='pedido'?('🛒 '+mm.item+(mm.qtd?(' ('+mm.qtd+')'):'')):('✉️ '+(mm.texto||'')))+(mm.resposta?("\n📝 "+mm.resposta):"")+(mm.status?("\n📌 "+mm.status):""); abrirWa2(foneDir(mm.produtor), msg); }
+function avisarProdutorWa(id){ var mm=msgCoopById(id); if(!mm)return; var msg="*"+(cfg.brand||MARCA_PADRAO)+"* — "+(mm.tipo==='pedido'?'Pedido':'Mensagem')+"\n"+(mm.tipo==='pedido'?('🛒 '+mm.item+(mm.qtd?(' ('+mm.qtd+')'):'')):('✉️ '+(mm.texto||'')))+(mm.resposta?("\n📝 "+mm.resposta):"")+(mm.status?("\n📌 "+mm.status):""); abrirWa2(foneDir(mm.produtor), msg); }
 
 /* =========================================================================
    DOCUMENTOS AO PRODUTOR — profissional técnico envia doc; produtor baixa
@@ -5714,19 +5882,19 @@ function enviarDocGeral(){
   if(!para){ alert('Escolha o destinatário.'); return; } if(!nome.trim()){ alert('Informe o nome do documento.'); return; }
   var d={id:uid(),criadoEm:new Date().toISOString(),de:user.nome,dePapel:user.papel,produtor:para,nome:nome.trim(),link:link.trim(),descricao:desc.trim(),noCofre:false,tipo:'envio'};
   docsProd.push(d); apiSalvarDoc('docsprod',d); logAcesso&&logAcesso('Enviou documento: '+nome,para); alert('Documento enviado a '+para+'.'); renderMain();
-  setTimeout(function(){ if(confirm('Avisar '+para+' pelo WhatsApp?')){ abrirWa2(foneDir(para), '*'+(cfg.brand||"Sistema")+'* — Documento enviado: '+nome+(link?('\n'+link):'')); } },150);
+  setTimeout(function(){ if(confirm('Avisar '+para+' pelo WhatsApp?')){ abrirWa2(foneDir(para), '*'+(cfg.brand||MARCA_PADRAO)+'* — Documento enviado: '+nome+(link?('\n'+link):'')); } },150);
 }
 function solicitarDoc(){
   var para=(document.getElementById('dsPara')||{}).value||'', nome=(document.getElementById('dsNome')||{}).value||'', desc=(document.getElementById('dsDesc')||{}).value||'';
   if(!para){ alert('Escolha de quem solicitar.'); return; } if(!nome.trim()){ alert('Informe o documento pedido.'); return; }
   var d={id:uid(),criadoEm:new Date().toISOString(),de:user.nome,dePapel:user.papel,produtor:para,nome:nome.trim(),link:'',descricao:desc.trim(),noCofre:false,tipo:'solicitacao',atendida:false};
   docsProd.push(d); apiSalvarDoc('docsprod',d); alert('Solicitação enviada a '+para+'.'); renderMain();
-  setTimeout(function(){ if(confirm('Avisar '+para+' pelo WhatsApp?')){ abrirWa2(foneDir(para), '*'+(cfg.brand||"Sistema")+'* — Solicitação de documento: '+nome); } },150);
+  setTimeout(function(){ if(confirm('Avisar '+para+' pelo WhatsApp?')){ abrirWa2(foneDir(para), '*'+(cfg.brand||MARCA_PADRAO)+'* — Solicitação de documento: '+nome); } },150);
 }
 function responderSolic(id){
   var d=docProdById(id); if(!d)return; var link=prompt('Cole o LINK do documento solicitado ("'+d.nome+'"):',''); if(link==null)return;
   d.link=(link||'').trim(); d.atendida=true; apiSalvarDoc('docsprod',d); alert('Solicitação respondida.'); renderMain();
-  setTimeout(function(){ if(confirm('Avisar '+d.de+' pelo WhatsApp?')){ abrirWa2(foneDir(d.de), '*'+(cfg.brand||"Sistema")+'* — Documento solicitado enviado: '+d.nome+(d.link?('\n'+d.link):'')); } },150);
+  setTimeout(function(){ if(confirm('Avisar '+d.de+' pelo WhatsApp?')){ abrirWa2(foneDir(d.de), '*'+(cfg.brand||MARCA_PADRAO)+'* — Documento solicitado enviado: '+d.nome+(d.link?('\n'+d.link):'')); } },150);
 }
 function addDocCofre(id){ var d=docProdById(id); if(!d)return; d.noCofre=true; salvarDocsProd(); alert('Adicionado ao seu cofre (aba Meus documentos).'); renderMain(); }
 function tirarDocCofre(id){ var d=docProdById(id); if(!d)return; d.noCofre=false; salvarDocsProd(); renderMain(); }
@@ -5831,13 +5999,13 @@ function videosAgroHtml(){
 function portalHtml(){
   var p=meuPerfil(), docs=meusDocs(), dgs=meusDiag(), sol=minhasSolic();
   var primeiro=(user.nome||"").split(" ")[0];
-  var hero='<div style="background:linear-gradient(135deg,var(--brand-dark),var(--brand));color:#fff;border-radius:16px;padding:22px;margin-bottom:14px">'+
-    '<div style="font-size:22px;font-weight:800">Olá, '+esc(primeiro)+'! 👋</div>'+
-    '<div style="opacity:.92;margin-top:4px">Sua central rural: documentos, serviços e informação do campo num só lugar.</div>'+
-    '<div class="row" style="gap:8px;margin-top:14px;flex-wrap:wrap">'+
-      '<button class="btn sm" onclick="irView(\'solicitar\')">🛒 Pedir serviço</button>'+
-      '<button class="btn sm" style="background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35)" onclick="irView(\'mercado\')">🏷️ Classificados</button>'+
-      '<button class="btn sm" style="background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35)" onclick="irView(\'servicos\')">🤝 Serviços</button>'+
+  var hero='<div class="card" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px">'+
+    '<div style="flex:1;min-width:220px"><div style="font-family:var(--serif);font-size:21px;font-weight:700;color:var(--brand-dark)">Olá, '+esc(primeiro)+'</div>'+
+    '<div class="muted" style="margin-top:2px">Documentos, serviços e informações do seu imóvel num só lugar.</div></div>'+
+    '<div class="row" style="gap:8px;flex-wrap:wrap">'+
+      '<button class="btn sm" onclick="irView(\'solicitar\')">Pedir serviço</button>'+
+      '<button class="btn sec sm" onclick="irView(\'mercado\')">Classificados</button>'+
+      '<button class="btn sec sm" onclick="irView(\'servicos\')">Serviços</button>'+
     '</div></div>';
   return hero+
     bannerAnunciosHtml()+
@@ -6106,7 +6274,7 @@ function masterHtml(){
     precosCardHtml()+
     trilhaCardHtml();
 }
-function salvarMarca(){ cfg.brand=document.getElementById("cfgBrand").value.trim()||"Sistema"; cfg.tagline=document.getElementById("cfgTag").value.trim(); salvarCfg(); aplicarTituloGuia(); salvarMarcaCache(); render(); }
+function salvarMarca(){ cfg.brand=document.getElementById("cfgBrand").value.trim()||MARCA_PADRAO; cfg.tagline=document.getElementById("cfgTag").value.trim(); salvarCfg(); aplicarTituloGuia(); salvarMarcaCache(); render(); }
 function subirLogo(){
   var f=document.getElementById("logoFile"); if(!f||!f.files||!f.files[0])return;
   var file=f.files[0];
@@ -6176,14 +6344,14 @@ function salvarModulos(id){
 // PWA: meta tags que o Apps Script NÃO permite via addMetaTag são injetadas aqui no <head>.
 (function injetarMetaPWA(){
   try{
-    var metas=[['theme-color','#0f2a63'],['apple-mobile-web-app-status-bar-style','black-translucent'],['apple-mobile-web-app-title','Sistema']];
+    var metas=[['theme-color','#0f2a63'],['apple-mobile-web-app-status-bar-style','black-translucent'],['apple-mobile-web-app-title','Rede FE']];
     metas.forEach(function(mt){
       if(document.querySelector('meta[name="'+mt[0]+'"]'))return;
       var m=document.createElement('meta'); m.setAttribute('name',mt[0]); m.setAttribute('content',mt[1]); document.head.appendChild(m);
     });
   }catch(e){}
 })();
-cfg={brand:"Sistema", tagline:"Gestão rural digital e integrada", bloqueados:[]};
+cfg={brand:MARCA_PADRAO, tagline:"Gestão rural digital e integrada", bloqueados:[]};
 carregarMarcaCache();   // marca/logo do cache aparecem já no 1º render (sem flash do nome)
 try{ prepararLogoPng(); }catch(e){}   // prepara o logo (PNG) p/ os documentos Word
 try{ var _c=new URLSearchParams(location.search).get('c'); if(_c) conviteToken=_c; }catch(e){}
